@@ -7,7 +7,7 @@ function App() {
   useEffect(() => {
     const fetchNoticias = async () => {
       try {
-        const res = await fetch("https://boas-noticias.vercel.app/api/boas-noticias");
+        const res = await fetch("/api/boas-noticias");
         const data = await res.json();
         setNoticias(data);
       } catch (error) {
