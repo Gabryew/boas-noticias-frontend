@@ -7,7 +7,7 @@ function App() {
   useEffect(() => {
     const fetchNoticias = async () => {
       try {
-        const res = await fetch("/api/boas-noticias");
+        const res = await fetch("https://boas-noticias.vercel.app/api/boas-noticias");
         const data = await res.json();
         setNoticias(data);
       } catch (error) {
@@ -21,25 +21,54 @@ function App() {
   }, []);
 
   return (
-    <div style={{ padding: "2rem", fontFamily: "Arial, sans-serif" }}>
-      <h1>🌞 Boas Notícias do Dia</h1>
+    <div style={{
+      padding: "2rem",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      backgroundColor: "#f8f9fa",
+      minHeight: "100vh",
+      color: "#333"
+    }}>
+      <h1 style={{ textAlign: "center", marginBottom: "2rem" }}>🌞 Boas Notícias do Dia</h1>
+      
       {carregando ? (
-        <p>Carregando...</p>
+        <p style={{ textAlign: "center" }}>Carregando...</p>
       ) : noticias.length === 0 ? (
-        <p>Nenhuma notícia encontrada.</p>
+        <p style={{ textAlign: "center" }}>Nenhuma notícia encontrada.</p>
       ) : (
-        <ul>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+          gap: "2rem"
+        }}>
           {noticias.map((noticia, index) => (
-            <li key={index} style={{ marginBottom: "1rem" }}>
-              <a href={noticia.link} target="_blank" rel="noreferrer">
-                <strong>{noticia.title}</strong>
-              </a>
-              <br />
-              <small>{new Date(noticia.pubDate).toLocaleString()}</small>
-              <p>{noticia.summary}</p>
-            </li>
+            <div key={index} style={{
+              backgroundColor: "#fff",
+              borderRadius: "12px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between"
+            }}>
+              {noticia.image && (
+                <img src={noticia.image} alt={noticia.title} style={{ width: "100%", height: "180px", objectFit: "cover" }} />
+              )}
+              <div style={{ padding: "1rem" }}>
+                <a href={noticia.link} target="_blank" rel="noreferrer" style={{ textDecoration: "none", color: "#333" }}>
+                  <h2 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>{noticia.title}</h2>
+                </a>
+                <small style={{ color: "#666" }}>
+                  {new Date(noticia.pubDate).toLocaleDateString("pt-BR", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                  })}
+                </small>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
