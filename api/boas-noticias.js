@@ -13,6 +13,18 @@ const palavrasChaveBoas = [
   "recorde", "vitória", "avanço", "progresso", "acesso", "impacto positivo"
 ];
 
+function extrairImagem(item) {
+  // RSS pode ter imagem em "enclosure", "media:content", ou no conteúdo HTML.
+  if (item.enclosure?.url) return item.enclosure.url;
+  if (item["media:content"]?.url) return item["media:content"].url;
+
+  const regex = /<img[^>]+src="([^">]+)"/i;
+  const match = item.content?.match(regex);
+  if (match && match[1]) return match[1];
+
+  return null;
+}
+
 function filtrarNoticia(noticia) {
   const texto = `${noticia.title} ${noticia.contentSnippet}`.toLowerCase();
   return palavrasChaveBoas.some(palavra => texto.includes(palavra));
@@ -28,7 +40,8 @@ module.exports = async (req, res) => {
         title: item.title,
         summary: item.contentSnippet,
         link: item.link,
-        pubDate: item.pubDate
+        pubDate: item.pubDate,
+        image: extrairImagem(item)
       }));
       todasNoticias.push(...boas);
     }
