@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "rss-parser": "^3.0.0",
+    "compromise": "^13.0.0",
+    "wink-sentiment": "^2.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
