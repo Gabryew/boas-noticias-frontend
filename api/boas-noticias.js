@@ -1,8 +1,10 @@
 import Parser from "rss-parser";
-import nlp from "compromise";
-import sentiment from "wink-sentiment";
+import spacy from "spacy";
 
 const parser = new Parser();
+
+// Carregar o modelo em português
+const nlp = spacy.load("pt_core_news_sm");
 
 const RSS_FEEDS = [
   "https://g1.globo.com/rss/g1/",
@@ -31,15 +33,30 @@ const negativeKeywords = [
   "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
 ];
 
+// Função para limpar e preparar o texto
 function cleanText(text) {
-  // Limpa o texto removendo pontuação e deixando tudo em minúsculas
   return text.replace(/[^\w\s]/g, "").toLowerCase();
 }
 
+// Função para analisar o sentimento da notícia usando spaCy
 function analyzeSentiment(text) {
-  // Analisa o sentimento da notícia (positivo, neutro ou negativo)
-  const analysis = sentiment(text);
-  return analysis.score;
+  const doc = nlp(text);
+
+  // Ajuste de regras para determinar sentimento
+  let sentimentScore = 0;
+  
+  // Contar entidades positivas e negativas
+  doc.ents.forEach(ent => {
+    if (positiveKeywords.includes(ent.text.toLowerCase())) {
+      sentimentScore += 1;
+    }
+    if (negativeKeywords.includes(ent.text.toLowerCase())) {
+      sentimentScore -= 1;
+    }
+  });
+
+  // Definindo um score de sentimento baseado em regras
+  return sentimentScore;
 }
 
 function classifyNews(noticia) {
@@ -48,14 +65,10 @@ function classifyNews(noticia) {
   
   const sentimentScore = analyzeSentiment(clean);
 
-  // Verifica palavras-chave no texto
-  const hasPositiveKeywords = positiveKeywords.some(keyword => clean.includes(keyword));
-  const hasNegativeKeywords = negativeKeywords.some(keyword => clean.includes(keyword));
-
-  // Classificação
-  if (sentimentScore > 1 || hasPositiveKeywords) {
+  // Classificação das notícias
+  if (sentimentScore > 1) {
     return "good";  // Boa notícia
-  } else if (sentimentScore < -1 || hasNegativeKeywords) {
+  } else if (sentimentScore < -1) {
     return "bad";  // Notícia ruim
   } else {
     return "neutral";  // Notícia neutra
@@ -73,7 +86,7 @@ export default async (req, res) => {
       const feed = await parser.parseURL(url);
       console.log(`Feed ${url} encontrado, processando itens...`);
 
-      // Classifica as notícias e filtra apenas as boas, neutras e ruins
+      // Classificando e filtrando as notícias
       const noticiasClassificadas = feed.items.map(item => {
         const classification = classifyNews(item);
 
@@ -82,18 +95,18 @@ export default async (req, res) => {
           summary: item.contentSnippet,
           link: item.link,
           pubDate: item.pubDate,
-          classification: classification,  // Adiciona a classificação
+          classification: classification,  // Adicionando a classificação
         };
       });
 
-      // Filtra as boas e neutras, você pode ajustar para o que precisar
+      // Filtrando as boas e neutras
       const boasENeutras = noticiasClassificadas.filter(noticia => noticia.classification === "good");
       todasNoticias.push(...boasENeutras);
     }
 
     console.log("Feeds processados, retornando notícias...");
     res.status(200).json(
-      todasNoticias.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))  // Ordena por data
+      todasNoticias.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))  // Ordenando por data
     );
   } catch (err) {
     console.error("Erro:", err);
