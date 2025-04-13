@@ -9,6 +9,7 @@ function App() {
       try {
         const res = await fetch("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         const data = await res.json();
+        console.log("Dados da API:", data); // Verifique a resposta da API
         setNoticias(data);
       } catch (error) {
         console.error("Erro ao buscar notícias:", error);
@@ -29,7 +30,7 @@ function App() {
       color: "#333"
     }}>
       <h1 style={{ textAlign: "center", marginBottom: "2rem" }}>🌞 Boas Notícias do Dia</h1>
-      
+
       {carregando ? (
         <p style={{ textAlign: "center" }}>Carregando...</p>
       ) : noticias.length === 0 ? (
@@ -50,12 +51,38 @@ function App() {
               flexDirection: "column",
               justifyContent: "space-between"
             }}>
-              {noticia.image && (
-                <img src={noticia.image} alt={noticia.title} style={{ width: "100%", height: "180px", objectFit: "cover" }} />
+              {/* Exibição da classificação */}
+              {noticia.classification === "good" && (
+                <div style={{
+                  backgroundColor: "#d4edda",
+                  color: "#155724",
+                  padding: "0.5rem",
+                  borderRadius: "4px",
+                  marginBottom: "0.5rem",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}>
+                  Boa notícia! 🌞
+                </div>
               )}
+
+              {/* Exibição da imagem, se houver */}
+              {noticia.image && (
+                <img src={noticia.image} alt={noticia.title} style={{
+                  width: "100%", 
+                  height: "180px", 
+                  objectFit: "cover"
+                }} />
+              )}
+
               <div style={{ padding: "1rem" }}>
-                <a href={noticia.link} target="_blank" rel="noreferrer" style={{ textDecoration: "none", color: "#333" }}>
-                  <h2 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>{noticia.title}</h2>
+                <a href={noticia.link} target="_blank" rel="noreferrer" style={{
+                  textDecoration: "none", 
+                  color: "#333"
+                }}>
+                  <h2 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>
+                    {noticia.title}
+                  </h2>
                 </a>
                 <small style={{ color: "#666" }}>
                   {new Date(noticia.pubDate).toLocaleDateString("pt-BR", {
