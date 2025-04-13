@@ -8,7 +8,6 @@ const RSS_FEEDS = [
   "https://g1.globo.com/rss/g1/",
   "https://www.bbc.com/portuguese/index.xml",
   "https://www.catracalivre.com.br/feed/",
-  "https://rss.uol.com.br/feed/noticias.xml",
   "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
   "https://www.cnnbrasil.com.br/rss/",
 ];
