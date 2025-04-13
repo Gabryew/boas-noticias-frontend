@@ -10,13 +10,23 @@ function Home({ modoNoturno }) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Fetch das notícias
     fetch("http://localhost:5000/noticias") // Aqui, pegue o endpoint que você configurou no backend
       .then((res) => res.json())
       .then((data) => {
-        setNoticias(data);
+        // Verifique se os dados não estão vazios antes de setar o estado
+        if (data && data.length > 0) {
+          setNoticias(data);
+        } else {
+          setNoticias([]);
+        }
+        setCarregando(false);
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar notícias:", error);
         setCarregando(false);
       });
-  }, []);
+  }, []); // O useEffect roda uma vez, no momento em que o componente é montado
 
   const handleSwipe = (direction) => {
     if (direction === "up" && noticiaAtual < noticias.length - 1) {
