@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: 'dist'  // Especifica a pasta de saída para o Vercel
+    outDir: 'dist',
+    rollupOptions: {
+      external: ['react-icons']
+    }
   }
 });

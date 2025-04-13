@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSwipeable } from "react-swipeable"; // Importa a biblioteca de swipe
 import { FaMoon, FaSun } from "react-icons/fa"; // Para o ícone de modo noturno
+import { CircleLoader } from "react-spinners"; // Importa o spinner
 
 function App() {
   const [noticias, setNoticias] = useState([]); // Armazena as notícias
@@ -87,7 +88,9 @@ function App() {
       <h1 style={{ textAlign: "center", marginBottom: "2rem" }}>🌞 Boas Notícias do Dia</h1>
 
       {carregando ? (
-        <p style={{ textAlign: "center" }}>Carregando...</p>
+        <div style={{ textAlign: "center", marginTop: "50px" }}>
+          <CircleLoader color={modoNoturno ? "#f8f9fa" : "#333"} loading={carregando} size={100} />
+        </div>
       ) : noticias.length === 0 ? (
         <p style={{ textAlign: "center" }}>Nenhuma notícia encontrada.</p>
       ) : (
