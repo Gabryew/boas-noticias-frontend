@@ -21,7 +21,7 @@ const RSS_FEEDS = [
   "https://www.correiobraziliense.com.br/rss/",
   "https://www.jb.com.br/rss/",
   "https://exame.com/rss/",
-  "https://www.terra.com.br/rss/Controller?channel=33e6a1a1a2d5d310VgnVCM10000098cceb0aRCRD&ctName=atomo-noticia&lg=pt-br",
+  "https://www.terra.com.br/rss/",
   "https://noticias.r7.com/feed.xml",
   "https://www.bbc.com/portuguese/rss.xml",
   "https://www.cnnbrasil.com.br/rss/",
