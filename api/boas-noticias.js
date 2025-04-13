@@ -12,28 +12,34 @@ const RSS_FEEDS = [
   "https://www.cnnbrasil.com.br/rss/",
 ];
 
-// Palavras-chave para notícias boas
-const positiveKeywords = [
-  "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
-  "conquista", "inovação", "superação", "melhoria", "comunidade", "ajuda", "preservação", 
-  "vacinado", "campanha", "educação", "recuperação", "aliança", "progresso", "acolhimento", 
-  "inclusão", "emprego", "desemprego", "renovação", "acordo", "acidente evitado", "projeto social", 
-  "ajustado", "salvamento", "renascimento", "ajuda humanitária", "medicação", "apoio", "expansão"
-];
+// Função para extrair a imagem de um item de notícia
+function extractImage(item) {
+  console.log("Verificando a estrutura do item:", item); // Adicionando log para verificar a estrutura
 
-// Palavras-chave para notícias ruins
-const negativeKeywords = [
-  "tragédia", "morte", "assassinato", "crime", "violência", "desastre", "incêndio", "fogo", "desabamento", 
-  "acidente", "explosão", "tragicamente", "incidente", "colapso", "guerra", "conflito", "corrupção", "fraude", 
-  "enfermo", "crise", "desemprego", "destruição", "falência", "desmoronamento", "dano", "assalto", "ferido", 
-  "fugitivo", "quebrada", "infecção", "barragem", "envenenamento", "atentado", "caos", "inundação", 
-  "desespero", "crise econômica", "subalimentação", "lockdown", "pandemia", "falta de", "quase morte", 
-  "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
-];
+  // Verifica no campo "enclosure" (se presente)
+  if (item.enclosures && item.enclosures.length > 0) {
+    console.log("Imagem encontrada no 'enclosure':", item.enclosures[0].url); // Log para verificar a URL da imagem
+    return item.enclosures[0].url; // Retorna a URL da imagem
+  }
 
-// Função para limpar e preparar o texto
-function cleanText(text) {
-  return text.replace(/[^\w\s]/g, "").toLowerCase();
+  // Verifica no campo "media:content" (se presente)
+  if (item["media:content"] && item["media:content"].url) {
+    console.log("Imagem encontrada no 'media:content':", item["media:content"].url); // Log para verificar a URL da imagem
+    return item["media:content"].url;
+  }
+
+  // Verifica no campo "content:encoded" (se a imagem estiver no conteúdo HTML)
+  if (item["content:encoded"]) {
+    const imgMatch = item["content:encoded"].match(/<img.*?src="(.*?)"/);
+    if (imgMatch && imgMatch[1]) {
+      console.log("Imagem encontrada no 'content:encoded':", imgMatch[1]); // Log para verificar a URL da imagem
+      return imgMatch[1]; // Retorna a URL da imagem encontrada
+    }
+  }
+
+  // Retorna null se não encontrar imagem
+  console.log("Nenhuma imagem encontrada.");
+  return null;
 }
 
 // Função para classificar a notícia com base nas palavras-chave
@@ -58,8 +64,9 @@ function classifyNews(noticia) {
     }
   });
 
-  // Extrair a imagem da notícia
+  // Extraindo a imagem da notícia
   const image = extractImage(noticia);
+  console.log("Imagem extraída:", image); // Adicionando log para verificar a imagem extraída
 
   // Classificando a notícia com base no score
   if (sentimentScore > 1) {
@@ -80,30 +87,6 @@ function classifyNews(noticia) {
   }
 }
 
-// Função para extrair a imagem de um item de notícia
-function extractImage(item) {
-  // Verifica no campo "enclosure" (se presente)
-  if (item.enclosures && item.enclosures.length > 0) {
-    return item.enclosures[0].url; // Retorna a URL da imagem
-  }
-
-  // Verifica no campo "media:content" (se presente)
-  if (item["media:content"] && item["media:content"].url) {
-    return item["media:content"].url;
-  }
-
-  // Verifica no campo "content:encoded" (se a imagem estiver no conteúdo HTML)
-  if (item["content:encoded"]) {
-    const imgMatch = item["content:encoded"].match(/<img.*?src="(.*?)"/);
-    if (imgMatch && imgMatch[1]) {
-      return imgMatch[1]; // Retorna a URL da imagem encontrada
-    }
-  }
-
-  // Retorna null se não encontrar imagem
-  return null;
-}
-
 export default async (req, res) => {
   try {
     const todasNoticias = [];
@@ -118,6 +101,7 @@ export default async (req, res) => {
       // Classificando e filtrando as notícias
       const noticiasClassificadas = feed.items.map(item => {
         const { classification, image } = classifyNews(item);
+        console.log("Classificando notícia:", item.title);
 
         return {
           title: item.title,
