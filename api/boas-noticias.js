@@ -1,6 +1,6 @@
-const Parser = require("rss-parser");
-const nlp = require("compromise");
-const sentiment = require("wink-sentiment");
+import Parser from "rss-parser";
+import nlp from "compromise";
+import sentiment from "wink-sentiment";
 
 const parser = new Parser();
 
@@ -62,7 +62,7 @@ function classifyNews(noticia) {
   }
 }
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
   try {
     const todasNoticias = [];
 
