@@ -39,8 +39,12 @@ module.exports = async (req, res) => {
   try {
     const todasNoticias = [];
 
+    console.log("Iniciando a busca por feeds...");
+
     for (const url of RSS_FEEDS) {
+      console.log(`Buscando feed: ${url}`);
       const feed = await parser.parseURL(url);
+      console.log(`Feed ${url} encontrado, processando itens...`);
       const boas = feed.items.filter(filtrarSentimento).map(item => ({
         title: item.title,
         summary: item.contentSnippet,
@@ -50,6 +54,7 @@ module.exports = async (req, res) => {
       todasNoticias.push(...boas);
     }
 
+    console.log("Feeds processados, retornando notícias...");
     res.status(200).json(
       todasNoticias.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
     );
