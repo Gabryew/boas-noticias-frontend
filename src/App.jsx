@@ -1,44 +1,45 @@
 import React, { useEffect, useState } from "react";
-import { useSwipeable } from "react-swipeable"; // Importa a biblioteca de swipe
+import { useSwipeable } from "react-swipeable"; // Importa a biblioteca para detectar swipe
 
 function App() {
-  const [noticias, setNoticias] = useState([]);
-  const [carregando, setCarregando] = useState(true);
-  const [noticiaAtual, setNoticiaAtual] = useState(0); // Controla qual notícia está visível
+  const [noticias, setNoticias] = useState([]); // Armazena as notícias
+  const [carregando, setCarregando] = useState(true); // Estado de carregamento
+  const [noticiaAtual, setNoticiaAtual] = useState(0); // Controla qual notícia está sendo exibida
 
+  // Carrega as notícias da API quando o componente é montado
   useEffect(() => {
     const fetchNoticias = async () => {
       try {
         const res = await fetch("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         const data = await res.json();
-        console.log("Dados da API:", data); // Verifique a resposta da API
-        setNoticias(data);
+        console.log("Dados da API:", data); // Verifique os dados que vieram da API
+        setNoticias(data); // Armazena as notícias no estado
       } catch (error) {
-        console.error("Erro ao buscar notícias:", error);
+        console.error("Erro ao buscar notícias:", error); // Se houver erro, exibe no console
       } finally {
-        setCarregando(false);
+        setCarregando(false); // Define que terminou de carregar
       }
     };
 
     fetchNoticias();
-  }, []);
+  }, []); // O useEffect roda uma vez quando o componente é montado
 
-  // Função que vai para a próxima ou para a anterior
+  // Função que é chamada quando o usuário faz swipe (arrasta) para cima ou para baixo
   const handleSwipe = (direction) => {
     if (direction === "up") {
-      // Vai para a próxima notícia (deslizar para cima)
+      // Se for para cima, vai para a próxima notícia
       setNoticiaAtual((prevIndex) => (prevIndex + 1) % noticias.length);
     } else if (direction === "down") {
-      // Vai para a notícia anterior (deslizar para baixo)
+      // Se for para baixo, vai para a notícia anterior
       setNoticiaAtual((prevIndex) => (prevIndex - 1 + noticias.length) % noticias.length);
     }
   };
 
-  // Configura o swipeable para detectar swipe para cima e para baixo
+  // Configura o swipeable (detecção de arrastamento)
   const swipeHandlers = useSwipeable({
-    onSwipedUp: () => handleSwipe("up"), // Quando o usuário deslizar para cima
-    onSwipedDown: () => handleSwipe("down"), // Quando o usuário deslizar para baixo
-    trackMouse: true, // Permite swipe usando o mouse também (para desktop)
+    onSwipedUp: () => handleSwipe("up"), // Se o usuário arrastar para cima
+    onSwipedDown: () => handleSwipe("down"), // Se o usuário arrastar para baixo
+    trackMouse: true, // Permite também arrastar com o mouse (para desktop)
   });
 
   return (
@@ -59,7 +60,7 @@ function App() {
         <p style={{ textAlign: "center" }}>Nenhuma notícia encontrada.</p>
       ) : (
         <div
-          {...swipeHandlers} // Aplica as interações de swipe ao container
+          {...swipeHandlers} // Aplica a interação de swipe ao container das notícias
           style={{
             display: "flex",
             flexDirection: "column",
@@ -80,7 +81,7 @@ function App() {
               padding: "1rem",
             }}
           >
-            {/* Exibição da classificação */}
+            {/* Exibe se a notícia for boa */}
             {noticias[noticiaAtual].classification === "good" && (
               <div
                 style={{
@@ -97,17 +98,20 @@ function App() {
               </div>
             )}
 
-            {/* Exibição da imagem, se houver */}
+            {/* Exibe a imagem da notícia, se houver */}
             {noticias[noticiaAtual].image && (
-              <img
-                src={noticias[noticiaAtual].image}
-                alt={noticias[noticiaAtual].title}
-                style={{
-                  width: "100%",
-                  height: "250px",
-                  objectFit: "cover",
-                }}
-              />
+              <>
+                {console.log(noticias[noticiaAtual].image)} {/* Verifique a URL da imagem */}
+                <img
+                  src={noticias[noticiaAtual].image}
+                  alt={noticias[noticiaAtual].title}
+                  style={{
+                    width: "100%",
+                    height: "250px",
+                    objectFit: "cover",
+                  }}
+                />
+              </>
             )}
 
             <div>
