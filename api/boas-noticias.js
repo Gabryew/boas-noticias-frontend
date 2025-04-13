@@ -1,8 +1,11 @@
 import Parser from "rss-parser";
+import spacy from "spacy";
 
 const parser = new Parser();
 
-// URLs dos feeds RSS
+// Carregar o modelo em português
+const nlp = spacy.load("pt_core_news_sm");
+
 const RSS_FEEDS = [
   "https://g1.globo.com/rss/g1/",
   "https://www.bbc.com/portuguese/index.xml",
@@ -35,30 +38,75 @@ function cleanText(text) {
   return text.replace(/[^\w\s]/g, "").toLowerCase();
 }
 
-// Função para classificar a notícia com base nas palavras-chave
+// Função para analisar o sentimento da notícia usando spaCy
+function analyzeSentiment(text) {
+  const doc = nlp(text);
+
+  let sentimentScore = 0;
+  
+  // Contar entidades positivas e negativas
+  doc.ents.forEach(ent => {
+    if (positiveKeywords.includes(ent.text.toLowerCase())) {
+      sentimentScore += 1;
+    }
+    if (negativeKeywords.includes(ent.text.toLowerCase())) {
+      sentimentScore -= 1;
+    }
+  });
+
+  // Definindo um score de sentimento baseado em regras
+  return sentimentScore;
+}
+
+// Função para extrair a imagem de um item de notícia
+function extractImage(item) {
+  // Verifica no campo "enclosure" (se presente)
+  if (item.enclosures && item.enclosures.length > 0) {
+    return item.enclosures[0].url; // Retorna a URL da imagem
+  }
+
+  // Verifica no campo "media:content" (se presente)
+  if (item["media:content"] && item["media:content"].url) {
+    return item["media:content"].url;
+  }
+
+  // Verifica no campo "content:encoded" (se a imagem estiver no conteúdo HTML)
+  if (item["content:encoded"]) {
+    const imgMatch = item["content:encoded"].match(/<img.*?src="(.*?)"/);
+    if (imgMatch && imgMatch[1]) {
+      return imgMatch[1]; // Retorna a URL da imagem encontrada
+    }
+  }
+
+  // Retorna null se não encontrar imagem
+  return null;
+}
+
 function classifyNews(noticia) {
   const texto = `${noticia.title} ${noticia.contentSnippet}`;
   const clean = cleanText(texto);
+  
+  const sentimentScore = analyzeSentiment(clean);
 
-  let sentimentScore = 0;
+  // Extrai a imagem
+  const image = extractImage(noticia);
 
-  // Contar palavras-chave positivas
-  positiveKeywords.forEach(keyword => {
-    if (clean.includes(keyword)) sentimentScore += 1;
-  });
-
-  // Contar palavras-chave negativas
-  negativeKeywords.forEach(keyword => {
-    if (clean.includes(keyword)) sentimentScore -= 1;
-  });
-
-  // Classificação das notícias
+  // Classificando as notícias
   if (sentimentScore > 1) {
-    return "good";  // Boa notícia
+    return {
+      classification: "good",  // Boa notícia
+      image: image,            // Adiciona a imagem
+    };
   } else if (sentimentScore < -1) {
-    return "bad";  // Notícia ruim
+    return {
+      classification: "bad",   // Notícia ruim
+      image: image,            // Adiciona a imagem
+    };
   } else {
-    return "neutral";  // Notícia neutra
+    return {
+      classification: "neutral", // Notícia neutra
+      image: image,             // Adiciona a imagem
+    };
   }
 }
 
@@ -75,7 +123,7 @@ export default async (req, res) => {
 
       // Classificando e filtrando as notícias
       const noticiasClassificadas = feed.items.map(item => {
-        const classification = classifyNews(item);
+        const { classification, image } = classifyNews(item); // Agora a função retorna a imagem
 
         return {
           title: item.title,
@@ -83,6 +131,7 @@ export default async (req, res) => {
           link: item.link,
           pubDate: item.pubDate,
           classification: classification,  // Adicionando a classificação
+          image: image,                   // Adicionando a imagem
         };
       });
 

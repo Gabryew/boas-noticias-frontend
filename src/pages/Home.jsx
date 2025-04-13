@@ -1,20 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSwipeable } from "react-swipeable"; // Para o swipe das notícias
+import { useSwipeable } from "react-swipeable";
 import ClipLoader from "react-spinners/ClipLoader";
 
 function Home({ modoNoturno }) {
   const [noticias, setNoticias] = useState([]);
   const [carregando, setCarregando] = useState(true);
-  const [noticiaAtual, setNoticiaAtual] = useState(0); // Controla qual notícia está visível
+  const [noticiaAtual, setNoticiaAtual] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch das notícias
-    fetch("https://boas-noticias-frontend.vercel.app/api/boas-noticias") // Aqui, pegue o endpoint que você configurou no backend
+    fetch("/api/boas-noticias")
       .then((res) => res.json())
       .then((data) => {
-        // Verifique se os dados não estão vazios antes de setar o estado
         if (data && data.length > 0) {
           setNoticias(data);
         } else {
@@ -26,7 +24,7 @@ function Home({ modoNoturno }) {
         console.error("Erro ao buscar notícias:", error);
         setCarregando(false);
       });
-  }, []); // O useEffect roda uma vez, no momento em que o componente é montado
+  }, []);
 
   const handleSwipe = (direction) => {
     if (direction === "up" && noticiaAtual < noticias.length - 1) {
@@ -45,26 +43,13 @@ function Home({ modoNoturno }) {
   return (
     <div
       {...swipeHandlers}
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        backgroundColor: modoNoturno ? "#333" : "#f8f9fa",
-        transition: "background-color 0.3s",
-        overflow: "hidden", // Impede overflow da tela
-      }}
+      className={`flex justify-center items-center min-h-screen transition-colors duration-300 overflow-hidden ${
+        modoNoturno ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-900"
+      }`}
     >
       <button
-        style={{
-          position: "absolute",
-          top: 20,
-          right: 20,
-          fontSize: 24,
-          background: "none",
-          border: "none",
-          color: modoNoturno ? "#f8f9fa" : "#333",
-        }}
+        className="absolute top-5 right-5 text-2xl bg-transparent border-none"
+        style={{ color: modoNoturno ? "#f8f9fa" : "#333" }}
       >
         {modoNoturno ? "🌞" : "🌙"}
       </button>
@@ -74,86 +59,39 @@ function Home({ modoNoturno }) {
       ) : noticias.length === 0 ? (
         <p>Nenhuma notícia encontrada.</p>
       ) : (
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            position: "relative", // Permite centralizar o card
-          }}
-        >
+        <div className="w-full h-full flex justify-center items-center relative">
           <div
             onClick={() => navigate(`/noticia/${noticiaAtual}`)}
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: 12,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              width: "100vw", // Preenche a largura da tela
-              height: "100vh", // Preenche a altura da tela
-              cursor: "pointer",
-              padding: "1rem",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
+            className="w-full h-full p-4 cursor-pointer flex flex-col justify-between bg-white dark:bg-zinc-800 rounded-xl shadow-lg transition-all duration-300"
           >
             {noticias[noticiaAtual].classification === "good" && (
-              <div
-                style={{
-                  backgroundColor: "#d4edda",
-                  color: "#155724",
-                  padding: "0.5rem",
-                  borderRadius: 4,
-                  marginBottom: 8,
-                  fontWeight: "bold",
-                  textAlign: "center",
-                }}
-              >
+              <div className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 p-2 rounded-md text-center font-bold mb-2">
                 Boa notícia! 🌞
               </div>
             )}
+
             {noticias[noticiaAtual].image && (
               <img
                 src={noticias[noticiaAtual].image}
                 alt={noticias[noticiaAtual].title}
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  objectFit: "cover",
-                  marginBottom: "1rem",
-                }}
+                className="w-full max-h-[300px] object-cover rounded-lg mb-4"
               />
             )}
-            <h2
-              style={{
-                fontSize: "1.5rem",
-                fontWeight: "bold",
-                marginBottom: 8,
-              }}
-            >
-              {noticias[noticiaAtual].title}
-            </h2>
-            <p>
-              {new Date(noticias[noticiaAtual].pubDate).toLocaleDateString(
-                "pt-BR",
-                {
+
+            <div className="flex flex-col gap-2 px-2">
+              <h2 className="text-2xl font-semibold">{noticias[noticiaAtual].title}</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                {new Date(noticias[noticiaAtual].pubDate).toLocaleDateString("pt-BR", {
                   weekday: "long",
                   year: "numeric",
                   month: "long",
                   day: "numeric",
-                }
-              )}
-            </p>
-            <p
-              style={{
-                fontSize: "0.9rem",
-                marginTop: 4,
-              }}
-            >
-              {noticias[noticiaAtual].author} ({noticias[noticiaAtual].source})
-            </p>
+                })}
+              </p>
+              <p className="text-sm italic">
+                {noticias[noticiaAtual].author} ({noticias[noticiaAtual].source})
+              </p>
+            </div>
           </div>
         </div>
       )}
