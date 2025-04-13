@@ -1,11 +1,8 @@
 import Parser from "rss-parser";
-import spacy from "spacy";
 
 const parser = new Parser();
 
-// Carregar o modelo em português
-const nlp = spacy.load("pt_core_news_sm");
-
+// URLs dos feeds RSS
 const RSS_FEEDS = [
   "https://g1.globo.com/rss/g1/",
   "https://www.bbc.com/portuguese/index.xml",
@@ -38,32 +35,22 @@ function cleanText(text) {
   return text.replace(/[^\w\s]/g, "").toLowerCase();
 }
 
-// Função para analisar o sentimento da notícia usando spaCy
-function analyzeSentiment(text) {
-  const doc = nlp(text);
-
-  // Ajuste de regras para determinar sentimento
-  let sentimentScore = 0;
-  
-  // Contar entidades positivas e negativas
-  doc.ents.forEach(ent => {
-    if (positiveKeywords.includes(ent.text.toLowerCase())) {
-      sentimentScore += 1;
-    }
-    if (negativeKeywords.includes(ent.text.toLowerCase())) {
-      sentimentScore -= 1;
-    }
-  });
-
-  // Definindo um score de sentimento baseado em regras
-  return sentimentScore;
-}
-
+// Função para classificar a notícia com base nas palavras-chave
 function classifyNews(noticia) {
   const texto = `${noticia.title} ${noticia.contentSnippet}`;
   const clean = cleanText(texto);
-  
-  const sentimentScore = analyzeSentiment(clean);
+
+  let sentimentScore = 0;
+
+  // Contar palavras-chave positivas
+  positiveKeywords.forEach(keyword => {
+    if (clean.includes(keyword)) sentimentScore += 1;
+  });
+
+  // Contar palavras-chave negativas
+  negativeKeywords.forEach(keyword => {
+    if (clean.includes(keyword)) sentimentScore -= 1;
+  });
 
   // Classificação das notícias
   if (sentimentScore > 1) {
