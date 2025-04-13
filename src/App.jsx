@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useSwipeable } from "react-swipeable"; // Importa a biblioteca para detectar swipe
+import { useSwipeable } from "react-swipeable"; // Importa a biblioteca de swipe
+import { FaMoon, FaSun } from "react-icons/fa"; // Para o ícone de modo noturno
 
 function App() {
   const [noticias, setNoticias] = useState([]); // Armazena as notícias
   const [carregando, setCarregando] = useState(true); // Estado de carregamento
   const [noticiaAtual, setNoticiaAtual] = useState(0); // Controla qual notícia está sendo exibida
+  const [modoNoturno, setModoNoturno] = useState(false); // Controla o modo noturno
 
   // Carrega as notícias da API quando o componente é montado
   useEffect(() => {
@@ -42,16 +44,46 @@ function App() {
     trackMouse: true, // Permite também arrastar com o mouse (para desktop)
   });
 
+  // Função para calcular o tempo de leitura estimado
+  const calcularTempoLeitura = (texto) => {
+    const palavras = texto.split(" ").length;
+    const palavrasPorMinuto = 200; // Média de leitura por minuto
+    const tempoEmMinutos = Math.ceil(palavras / palavrasPorMinuto);
+    return tempoEmMinutos;
+  };
+
+  // Função para alternar o modo noturno
+  const alternarModoNoturno = () => {
+    setModoNoturno(!modoNoturno);
+  };
+
   return (
     <div
       style={{
         padding: "2rem",
         fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        backgroundColor: "#f8f9fa",
+        backgroundColor: modoNoturno ? "#333" : "#f8f9fa", // Muda o fundo para o modo noturno
+        color: modoNoturno ? "#f8f9fa" : "#333", // Muda a cor da fonte para o modo noturno
         minHeight: "100vh",
-        color: "#333",
+        transition: "background-color 0.3s, color 0.3s", // Transição suave ao mudar o modo
       }}
     >
+      {/* Botão para alternar o modo noturno */}
+      <button
+        onClick={alternarModoNoturno}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          backgroundColor: "transparent",
+          border: "none",
+          color: modoNoturno ? "#f8f9fa" : "#333",
+          fontSize: "24px",
+        }}
+      >
+        {modoNoturno ? <FaSun /> : <FaMoon />}
+      </button>
+
       <h1 style={{ textAlign: "center", marginBottom: "2rem" }}>🌞 Boas Notícias do Dia</h1>
 
       {carregando ? (
@@ -66,6 +98,7 @@ function App() {
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
+            transition: "transform 0.3s ease-in-out",
           }}
         >
           <div
@@ -77,7 +110,6 @@ function App() {
               width: "90%",
               maxWidth: "500px",
               cursor: "pointer",
-              transition: "transform 0.3s ease-in-out",
               padding: "1rem",
             }}
           >
@@ -100,18 +132,16 @@ function App() {
 
             {/* Exibe a imagem da notícia, se houver */}
             {noticias[noticiaAtual].image && (
-              <>
-                {console.log(noticias[noticiaAtual].image)} {/* Verifique a URL da imagem */}
-                <img
-                  src={noticias[noticiaAtual].image}
-                  alt={noticias[noticiaAtual].title}
-                  style={{
-                    width: "100%",
-                    height: "250px",
-                    objectFit: "cover",
-                  }}
-                />
-              </>
+              <img
+                src={noticias[noticiaAtual].image}
+                alt={noticias[noticiaAtual].title}
+                style={{
+                  width: "100%",
+                  height: "250px",
+                  objectFit: "cover",
+                  marginBottom: "1rem",
+                }}
+              />
             )}
 
             <div>
@@ -120,12 +150,12 @@ function App() {
                   fontSize: "1.5rem",
                   fontWeight: "bold",
                   marginBottom: "0.5rem",
-                  color: "#333",
+                  color: modoNoturno ? "#f8f9fa" : "#333",
                 }}
               >
                 {noticias[noticiaAtual].title}
               </h2>
-              <p style={{ color: "#666" }}>
+              <p style={{ color: modoNoturno ? "#f8f9fa" : "#666" }}>
                 {new Date(noticias[noticiaAtual].pubDate).toLocaleDateString("pt-BR", {
                   weekday: "long",
                   year: "numeric",
@@ -135,12 +165,23 @@ function App() {
               </p>
               <p
                 style={{
-                  color: "#666",
+                  color: modoNoturno ? "#f8f9fa" : "#666",
                   fontSize: "0.9rem",
                   marginTop: "0.5rem",
                 }}
               >
                 {noticias[noticiaAtual].author} ({noticias[noticiaAtual].source})
+              </p>
+
+              {/* Tempo de leitura */}
+              <p
+                style={{
+                  color: modoNoturno ? "#f8f9fa" : "#666",
+                  fontSize: "0.9rem",
+                  marginTop: "1rem",
+                }}
+              >
+                Tempo de leitura: {calcularTempoLeitura(noticias[noticiaAtual].content)} minutos
               </p>
             </div>
           </div>
