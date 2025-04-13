@@ -87,7 +87,7 @@ module.exports = async (req, res) => {
       });
 
       // Filtra as boas e neutras, você pode ajustar para o que precisar
-      const boasENeutras = noticiasClassificadas.filter(noticia => noticia.classification === "good" || noticia.classification === "neutral");
+      const boasENeutras = noticiasClassificadas.filter(noticia => noticia.classification === "good");
       todasNoticias.push(...boasENeutras);
     }
 
