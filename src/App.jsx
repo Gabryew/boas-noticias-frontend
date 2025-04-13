@@ -16,6 +16,7 @@ function App() {
         const res = await fetch("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         const data = await res.json();
         console.log("Dados da API:", data); // Verifique os dados que vieram da API
+        // Supondo que os dados retornados sejam um array de notícias:
         setNoticias(data); // Armazena as notícias no estado
       } catch (error) {
         console.error("Erro ao buscar notícias:", error); // Se houver erro, exibe no console
