@@ -11,7 +11,6 @@ const RSS_FEEDS = [
   "https://rss.uol.com.br/feed/noticias.xml",
   "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
   "https://www.cnnbrasil.com.br/rss/",
-  "https://oglobo.globo.com/rss.xml",
 ];
 
 function filtrarSentimento(noticia) {
