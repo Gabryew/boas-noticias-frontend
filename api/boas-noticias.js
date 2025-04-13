@@ -9,21 +9,9 @@ const RSS_FEEDS = [
   "https://www.bbc.com/portuguese/index.xml",
   "https://www.catracalivre.com.br/feed/",
   "https://rss.uol.com.br/feed/noticias.xml",
-  "https://feeds.folha.uol.com.br/emcimadahora/rss091.xml",
-  "https://www.correiobraziliense.com.br/rss.xml",
-  "https://www.estadao.com.br/rss/",
-  "https://oglobo.globo.com/rss/",
-  "https://noticias.uol.com.br/rss/ultimas/",
-  "https://www.gazetadopovo.com.br/rss/",
-  "https://agenciabrasil.ebc.com.br/feed/",
-  "https://www.correiobraziliense.com.br/rss/",
-  "https://www.jb.com.br/rss/",
-  "https://exame.com/rss/",
-  "https://www.terra.com.br/rss/",
-  "https://www.bbc.com/portuguese/rss.xml",
+  "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
   "https://www.cnnbrasil.com.br/rss/",
-  "https://www.band.uol.com.br/rss/noticias",
-  "https://www.redetv.uol.com.br/rss/",
+  "https://oglobo.globo.com/rss.xml",
 ];
 
 function filtrarSentimento(noticia) {
