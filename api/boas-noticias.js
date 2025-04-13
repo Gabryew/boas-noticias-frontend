@@ -1,11 +1,9 @@
 import Parser from "rss-parser";
-import spacy from "spacy";
 
+// Instanciando o Parser RSS
 const parser = new Parser();
 
-// Carregar o modelo em português
-const nlp = spacy.load("pt_core_news_sm");
-
+// Listagem de feeds RSS
 const RSS_FEEDS = [
   "https://g1.globo.com/rss/g1/",
   "https://www.bbc.com/portuguese/index.xml",
@@ -38,24 +36,48 @@ function cleanText(text) {
   return text.replace(/[^\w\s]/g, "").toLowerCase();
 }
 
-// Função para analisar o sentimento da notícia usando spaCy
-function analyzeSentiment(text) {
-  const doc = nlp(text);
+// Função para classificar a notícia com base nas palavras-chave
+function classifyNews(noticia) {
+  const texto = `${noticia.title} ${noticia.contentSnippet}`;
+  const clean = cleanText(texto);
 
+  // Inicializando a pontuação de sentimento
   let sentimentScore = 0;
-  
-  // Contar entidades positivas e negativas
-  doc.ents.forEach(ent => {
-    if (positiveKeywords.includes(ent.text.toLowerCase())) {
+
+  // Verificando palavras-chave positivas
+  positiveKeywords.forEach(keyword => {
+    if (clean.includes(keyword)) {
       sentimentScore += 1;
     }
-    if (negativeKeywords.includes(ent.text.toLowerCase())) {
+  });
+
+  // Verificando palavras-chave negativas
+  negativeKeywords.forEach(keyword => {
+    if (clean.includes(keyword)) {
       sentimentScore -= 1;
     }
   });
 
-  // Definindo um score de sentimento baseado em regras
-  return sentimentScore;
+  // Extrair a imagem da notícia
+  const image = extractImage(noticia);
+
+  // Classificando a notícia com base no score
+  if (sentimentScore > 1) {
+    return {
+      classification: "good",  // Boa notícia
+      image: image,            // Adiciona a imagem
+    };
+  } else if (sentimentScore < -1) {
+    return {
+      classification: "bad",   // Notícia ruim
+      image: image,            // Adiciona a imagem
+    };
+  } else {
+    return {
+      classification: "neutral", // Notícia neutra
+      image: image,             // Adiciona a imagem
+    };
+  }
 }
 
 // Função para extrair a imagem de um item de notícia
@@ -82,34 +104,6 @@ function extractImage(item) {
   return null;
 }
 
-function classifyNews(noticia) {
-  const texto = `${noticia.title} ${noticia.contentSnippet}`;
-  const clean = cleanText(texto);
-  
-  const sentimentScore = analyzeSentiment(clean);
-
-  // Extrai a imagem
-  const image = extractImage(noticia);
-
-  // Classificando as notícias
-  if (sentimentScore > 1) {
-    return {
-      classification: "good",  // Boa notícia
-      image: image,            // Adiciona a imagem
-    };
-  } else if (sentimentScore < -1) {
-    return {
-      classification: "bad",   // Notícia ruim
-      image: image,            // Adiciona a imagem
-    };
-  } else {
-    return {
-      classification: "neutral", // Notícia neutra
-      image: image,             // Adiciona a imagem
-    };
-  }
-}
-
 export default async (req, res) => {
   try {
     const todasNoticias = [];
@@ -123,15 +117,15 @@ export default async (req, res) => {
 
       // Classificando e filtrando as notícias
       const noticiasClassificadas = feed.items.map(item => {
-        const { classification, image } = classifyNews(item); // Agora a função retorna a imagem
+        const { classification, image } = classifyNews(item);
 
         return {
           title: item.title,
           summary: item.contentSnippet,
           link: item.link,
           pubDate: item.pubDate,
-          classification: classification,  // Adicionando a classificação
-          image: image,                   // Adicionando a imagem
+          classification: classification,
+          image: image,
         };
       });
 
