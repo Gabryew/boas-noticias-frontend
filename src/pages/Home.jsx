@@ -11,7 +11,7 @@ function Home({ modoNoturno }) {
 
   useEffect(() => {
     // Fetch das notícias
-    fetch("http://localhost:5000/noticias") // Aqui, pegue o endpoint que você configurou no backend
+    fetch("https://boas-noticias-frontend.vercel.app/api/boas-noticias") // Aqui, pegue o endpoint que você configurou no backend
       .then((res) => res.json())
       .then((data) => {
         // Verifique se os dados não estão vazios antes de setar o estado
