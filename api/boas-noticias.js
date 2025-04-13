@@ -1,33 +1,38 @@
 const Parser = require("rss-parser");
+const nlp = require("compromise");
+const sentiment = require("wink-sentiment");
+
 const parser = new Parser();
 
 const RSS_FEEDS = [
   "https://g1.globo.com/rss/g1/",
   "https://www.bbc.com/portuguese/index.xml",
   "https://www.catracalivre.com.br/feed/",
+  "https://rss.uol.com.br/feed/noticias.xml",
+  "https://feeds.folha.uol.com.br/emcimadahora/rss091.xml",
+  "https://www.correiobraziliense.com.br/rss.xml",
+  "https://g1.globo.com/rss/g1/",
+  "https://www1.folha.uol.com.br/feed/",
+  "https://www.estadao.com.br/rss/",
+  "https://oglobo.globo.com/rss/",
+  "https://noticias.uol.com.br/rss/ultimas/",
+  "https://www.gazetadopovo.com.br/rss/",
+  "https://agenciabrasil.ebc.com.br/feed/",
+  "https://www.correiobraziliense.com.br/rss/",
+  "https://www.jb.com.br/rss/",
+  "https://exame.com/rss/",
+  "https://www.terra.com.br/rss/Controller?channel=33e6a1a1a2d5d310VgnVCM10000098cceb0aRCRD&ctName=atomo-noticia&lg=pt-br",
+  "https://noticias.r7.com/feed.xml",
+  "https://www.bbc.com/portuguese/rss.xml",
+  "https://www.cnnbrasil.com.br/rss/",
+  "https://www.band.uol.com.br/rss/noticias",
+  "https://www.redetv.uol.com.br/rss/",
 ];
 
-const palavrasChaveBoas = [
-  "descobre", "cura", "vence", "salva", "ajuda", "melhora",
-  "esperança", "sustentável", "herói", "heróico", "positivo",
-  "recorde", "vitória", "avanço", "progresso", "acesso", "impacto positivo"
-];
-
-function extrairImagem(item) {
-  // RSS pode ter imagem em "enclosure", "media:content", ou no conteúdo HTML.
-  if (item.enclosure?.url) return item.enclosure.url;
-  if (item["media:content"]?.url) return item["media:content"].url;
-
-  const regex = /<img[^>]+src="([^">]+)"/i;
-  const match = item.content?.match(regex);
-  if (match && match[1]) return match[1];
-
-  return null;
-}
-
-function filtrarNoticia(noticia) {
-  const texto = `${noticia.title} ${noticia.contentSnippet}`.toLowerCase();
-  return palavrasChaveBoas.some(palavra => texto.includes(palavra));
+function filtrarSentimento(noticia) {
+  const texto = `${noticia.title} ${noticia.contentSnippet}`;
+  const analise = sentiment(texto);
+  return analise.score > 1; // Mantém só as com sentimento bem positivo
 }
 
 module.exports = async (req, res) => {
@@ -36,12 +41,11 @@ module.exports = async (req, res) => {
 
     for (const url of RSS_FEEDS) {
       const feed = await parser.parseURL(url);
-      const boas = feed.items.filter(filtrarNoticia).map(item => ({
+      const boas = feed.items.filter(filtrarSentimento).map(item => ({
         title: item.title,
         summary: item.contentSnippet,
         link: item.link,
-        pubDate: item.pubDate,
-        image: extrairImagem(item)
+        pubDate: item.pubDate
       }));
       todasNoticias.push(...boas);
     }
