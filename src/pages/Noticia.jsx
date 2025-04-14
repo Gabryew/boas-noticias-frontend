@@ -159,14 +159,6 @@ export default function Noticia() {
       {/* Barra de Progresso de Rolagem */}
       <div className="h-1 bg-blue-600" style={{ width: `${scrollProgress}%` }}></div>
 
-      {/* Botão Voltar para a Home */}
-      <button
-        onClick={goHome}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl m-4"
-      >
-        Voltar para a Home
-      </button>
-
       {/* Imagem principal */}
       <div
         className="h-64 md:h-96 bg-cover bg-center"
@@ -222,45 +214,62 @@ export default function Noticia() {
             .split("\n")
             .map((par, i) => <p key={i}>{par.trim()}</p>)}
         </div>
+      </div>
 
-        <a
-          href={noticia.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition"
-        >
-          Ler no site original
-        </a>
-
-        {/* Botão de Compartilhar */}
-        <button
-          onClick={() => {
-            if (navigator.share) {
-              navigator
-                .share({
-                  title: noticia.title,
-                  text: noticia.summary,
-                  url: noticia.link,
-                })
-                .then(() => console.log("Notícia compartilhada com sucesso!"))
-                .catch((error) => console.error("Erro ao compartilhar a notícia:", error));
-            } else {
-              alert("Compartilhamento não suportado neste navegador.");
-            }
-          }}
-          className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold mt-4 transition"
-        >
-          Compartilhar
-        </button>
+      {/* Ações ao final */}
+      <div className="max-w-3xl mx-auto p-6 space-y-6 border-t border-gray-700">
+        {/* Botões de Voltar para Home, Compartilhar e Ler no Site */}
+        <div className="flex gap-4 flex-wrap justify-center">
+          <button
+            onClick={goHome}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition"
+          >
+            Voltar para a Home
+          </button>
+          <a
+            href={noticia.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition"
+          >
+            Ler no site original
+          </a>
+          <button
+            onClick={() => {
+              if (navigator.share) {
+                navigator
+                  .share({
+                    title: noticia.title,
+                    text: noticia.summary,
+                    url: noticia.link,
+                  })
+                  .then(() => console.log("Notícia compartilhada com sucesso!"))
+                  .catch((error) => console.error("Erro ao compartilhar a notícia:", error));
+              } else {
+                alert("Compartilhamento não suportado neste navegador.");
+              }
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold transition"
+          >
+            Compartilhar
+          </button>
+        </div>
 
         {/* Outras Notícias */}
         <div className="mt-8 space-y-4">
           <h2 className="text-xl font-semibold">Outras Notícias</h2>
           {relatedNews.map((news) => (
-            <div key={news.link} className="bg-gray-800 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold">{news.title}</h3>
-              <a href={`/noticia/${news.link}`} className="text-blue-500">
-                Ver mais
+            <div key={news.link} className="bg-gray-800 p-4 rounded-lg flex items-center gap-4">
+              <img
+                src={news.image || "default-image.jpg"}
+                alt={news.title}
+                className="w-16 h-16 object-cover rounded-lg"
+              />
+              <a
+                href={`/noticia/${news.link}`}
+                className="text-blue-500 hover:underline text-lg"
+              >
+                {news.title}
               </a>
             </div>
           ))}
