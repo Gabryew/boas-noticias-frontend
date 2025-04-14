@@ -12,6 +12,11 @@ export default function Noticia() {
   const { link } = useParams();
   const navigate = useNavigate();
 
+  // 👉 Scrolla pro topo quando o link muda (ou seja, nova notícia é carregada)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [link]);
+
   useEffect(() => {
     async function fetchNoticia() {
       try {
@@ -21,7 +26,6 @@ export default function Noticia() {
           setNoticia(noticiaEncontrada);
           calcularTempoLeitura(noticiaEncontrada.summary);
 
-          // Carregar outras 3 notícias aleatórias
           const outras = response.data
             .filter((n) => n.link !== link)
             .sort(() => 0.5 - Math.random())
@@ -81,7 +85,6 @@ export default function Noticia() {
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-black text-white text-xl">
-        {/* Círculo girando */}
         <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
       </div>
     );
@@ -97,7 +100,6 @@ export default function Noticia() {
 
   return (
     <div className="bg-black text-white min-h-screen">
-      {/* Barra de progresso de leitura */}
       <div className="fixed top-0 left-0 w-full h-1 bg-white z-50">
         <motion.div
           className="h-full bg-blue-500 origin-left"
@@ -108,7 +110,6 @@ export default function Noticia() {
         />
       </div>
 
-      {/* Imagem principal */}
       <div
         className="h-64 md:h-96 bg-cover bg-center"
         style={{
@@ -116,7 +117,6 @@ export default function Noticia() {
         }}
       />
 
-      {/* Conteúdo da notícia */}
       <div className="max-w-3xl mx-auto p-6 space-y-6">
         <div className="space-y-1">
           <h1 className="text-3xl md:text-4xl font-bold leading-tight">
@@ -137,7 +137,6 @@ export default function Noticia() {
             .map((par, i) => <p key={i}>{par.trim()}</p>)}
         </div>
 
-        {/* Botões de ação */}
         <div className="flex flex-col md:flex-row gap-4 pt-4 border-t border-white/10 mt-6">
           <button
             onClick={() => navigate("/")}
@@ -164,7 +163,6 @@ export default function Noticia() {
         </div>
       </div>
 
-      {/* Outras notícias no fim da página */}
       {outrasNoticias.length > 0 && (
         <div className="max-w-6xl mx-auto p-6 mt-12 space-y-6">
           <h2 className="text-2xl font-bold">Outras notícias para você</h2>
