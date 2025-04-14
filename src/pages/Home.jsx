@@ -49,7 +49,7 @@ export default function Home() {
       {noticias.map((noticia, index) => (
         <motion.div
           key={index}
-          className="w-screen h-screen snap-start relative flex items-center justify-center cursor-pointer"
+          className="w-screen h-screen snap-start relative flex items-end justify-center cursor-pointer"
           onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
