@@ -81,7 +81,8 @@ export default function Noticia() {
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-black text-white text-xl">
-        Carregando notícia...
+        {/* Círculo girando */}
+        <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
       </div>
     );
   }
