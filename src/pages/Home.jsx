@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 function calcularTempoLeitura(texto) {
   if (!texto) return null;
@@ -14,8 +15,12 @@ function calcularTempoLeitura(texto) {
 export default function Home() {
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [salvas, setSalvas] = useState([]); // Estado para notícias salvas
+  const [salvas, setSalvas] = useState(() => {
+    const local = localStorage.getItem("noticiasSalvas");
+    return local ? JSON.parse(local) : [];
+  });
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     async function fetchNoticias() {
@@ -26,10 +31,6 @@ export default function Home() {
           readingTime: calcularTempoLeitura(noticia.content),
         }));
         setNoticias(noticiasComTempo);
-
-        // Carregar notícias salvas do localStorage
-        const noticiasSalvas = JSON.parse(localStorage.getItem("noticiasSalvas")) || [];
-        setSalvas(noticiasSalvas);
       } catch (error) {
         console.error("Erro ao buscar notícias:", error);
       } finally {
@@ -40,18 +41,16 @@ export default function Home() {
     fetchNoticias();
   }, []);
 
-  const salvarNoticia = (noticia) => {
-    const novasSalvas = [...salvas];
-    const index = novasSalvas.findIndex((n) => n.link === noticia.link);
-    if (index === -1) {
-      novasSalvas.push(noticia);
+  const toggleSalvarNoticia = (noticia) => {
+    const jaSalva = salvas.find((n) => n.link === noticia.link);
+    let atualizadas;
+    if (jaSalva) {
+      atualizadas = salvas.filter((n) => n.link !== noticia.link);
     } else {
-      novasSalvas.splice(index, 1); // Se já estiver salva, remove
+      atualizadas = [...salvas, noticia];
     }
-
-    // Atualizar o localStorage
-    localStorage.setItem("noticiasSalvas", JSON.stringify(novasSalvas));
-    setSalvas(novasSalvas);
+    setSalvas(atualizadas);
+    localStorage.setItem("noticiasSalvas", JSON.stringify(atualizadas));
   };
 
   if (loading) {
@@ -64,46 +63,61 @@ export default function Home() {
 
   return (
     <div className="w-screen h-screen overflow-y-scroll snap-y snap-mandatory bg-black text-white">
-      {noticias.map((noticia, index) => (
-        <motion.div
-          key={index}
-          className="w-screen h-screen snap-start relative flex items-end justify-center cursor-pointer"
-          onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: index * 0.1 }}
-          style={{
-            backgroundImage: `url(${noticia.image})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-0" />
+      {/* Menu superior */}
+      <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
+        <div className="flex gap-4 text-sm font-semibold">
+          <Link to="/" className={`hover:underline ${location.pathname === '/' ? 'text-white' : 'text-gray-400'}`}>Últimas Notícias</Link>
+          <Link to="/noticias-salvas" className={`hover:underline ${location.pathname === '/noticias-salvas' ? 'text-white' : 'text-gray-400'}`}>Notícias Salvas</Link>
+        </div>
+      </div>
 
-          <div className="relative z-10 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm">
-            <h1 className="text-3xl md:text-4xl font-extrabold leading-tight drop-shadow-lg">
-              {noticia.title}
-            </h1>
-            <div className="text-sm text-gray-300 flex flex-wrap gap-4 font-light">
-              <span>{noticia.source}</span>
-              {noticia.readingTime && <span>Tempo de leitura: {noticia.readingTime}</span>}
-            </div>
+      {noticias.map((noticia, index) => {
+        const salva = salvas.find((n) => n.link === noticia.link);
+
+        return (
+          <motion.div
+            key={index}
+            className="w-screen h-screen snap-start relative flex items-end justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: index * 0.1 }}
+            style={{
+              backgroundImage: `url(${noticia.image})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          >
+            {/* Gradiente de fundo */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-0" />
 
             {/* Ícone de salvar */}
             <button
-              onClick={() => salvarNoticia(noticia)}
-              className="absolute top-4 right-4 text-white text-3xl"
+              onClick={() => toggleSalvarNoticia(noticia)}
+              className="absolute top-4 right-4 z-20 text-white text-xl drop-shadow-lg"
             >
-              {salvas.some((n) => n.link === noticia.link) ? (
-                <span>❤️</span> // Coração preenchido se já estiver salva
-              ) : (
-                <span>🤍</span> // Coração vazio
-              )}
+              {salva ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
             </button>
-          </div>
-        </motion.div>
-      ))}
+
+            {/* Conteúdo */}
+            <div
+              className="relative z-10 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm cursor-pointer"
+              onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
+            >
+              <h1 className="text-3xl md:text-4xl font-extrabold leading-tight drop-shadow-lg">
+                {noticia.title}
+              </h1>
+              <div className="text-sm text-gray-300 flex flex-col gap-1 font-light">
+                {noticia.source && <span>{noticia.source}</span>}
+                {noticia.readingTime && <span>Tempo de leitura: {noticia.readingTime}</span>}
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
+git add .
+git commit -m "att"
+git push
