@@ -30,30 +30,32 @@ export default function Home() {
   }
 
   return (
-    <div className="w-screen h-screen overflow-y-scroll snap-y snap-mandatory">
+    <div className="w-screen h-screen overflow-y-scroll snap-y snap-mandatory bg-black">
       {noticias.map((noticia, index) => (
-        <div
+        <Link
+          to={`/noticia/${encodeURIComponent(noticia.link)}`}
           key={index}
-          className="w-screen h-screen snap-start flex flex-col justify-end relative text-white"
+          className="w-screen h-screen snap-start relative block"
         >
-          <img
-            src={noticia.image || "/default-image.jpg"}
-            alt={noticia.title}
-            className="w-full h-full object-cover"
-          />
-          <div className="bg-black/60 p-6 backdrop-blur-sm w-full">
-            <h1 className="text-2xl font-bold mb-2">{noticia.title}</h1>
-            <p className="text-sm">
-              {new Date(noticia.pubDate).toLocaleDateString()}
-            </p>
-            <Link
-              to={`/noticia/${encodeURIComponent(noticia.link)}`}
-              className="text-blue-400 underline mt-4"
-            >
-              Ler mais
-            </Link>
+          <div
+            className="w-full h-full bg-cover bg-center flex items-end"
+            style={{
+              backgroundImage: `url(${noticia.image || "default-image.jpg"})`,
+            }}
+          >
+            <div className="w-full bg-black/60 p-6 backdrop-blur-sm">
+              <h1 className="text-2xl font-bold text-white mb-2 leading-snug">
+                {noticia.title}
+              </h1>
+              <div className="flex justify-between text-sm text-gray-300">
+                <span>{new Date(noticia.pubDate).toLocaleDateString()}</span>
+                <span>
+                  {noticia.author} ({noticia.source})
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );
