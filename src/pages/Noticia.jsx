@@ -11,7 +11,9 @@ export default function Noticia({ modoNoturno }) {
     async function fetchNoticia() {
       try {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
-        const noticiaEncontrada = response.data[id]; // Agora pega a notícia com base no ID
+        console.log(response.data); // Para verificar os dados retornados
+        const noticiaEncontrada = response.data[id]; // Pega a notícia com base no ID
+        console.log(noticiaEncontrada); // Verifique o conteúdo da notícia
         setNoticia(noticiaEncontrada);
       } catch (error) {
         console.error("Erro ao buscar a notícia:", error);
@@ -27,6 +29,15 @@ export default function Noticia({ modoNoturno }) {
     return (
       <div className="h-screen flex items-center justify-center bg-black text-white text-xl">
         Carregando a notícia...
+      </div>
+    );
+  }
+
+  // Verifique se a notícia existe antes de renderizar
+  if (!noticia) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-black text-white text-xl">
+        Notícia não encontrada!
       </div>
     );
   }
