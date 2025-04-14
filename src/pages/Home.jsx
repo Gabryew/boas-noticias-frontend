@@ -23,7 +23,7 @@ export default function Home() {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         const noticiasComTempo = response.data.map((noticia) => ({
           ...noticia,
-          readingTime: calcularTempoLeitura(noticia.content), // Assuming the content field holds the text
+          readingTime: calcularTempoLeitura(noticia.content), // Garantir que o campo 'content' exista
         }));
         setNoticias(noticiasComTempo);
       } catch (error) {
@@ -65,12 +65,12 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-0" />
 
           {/* Conteúdo */}
-          <div className="relative z-10 w-full px-6 py-16 text-left space-y-4 backdrop-blur-sm">
+          <div className="relative z-10 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm">
             <h1 className="text-3xl md:text-4xl font-extrabold leading-tight drop-shadow-lg">
               {noticia.title}
             </h1>
             <div className="text-sm text-gray-300 flex flex-wrap gap-4 font-light">
-              <span>{noticia.readingTime}</span> {/* Exibindo o tempo de leitura */}
+              {noticia.readingTime && <span>{noticia.readingTime}</span>} {/* Exibindo o tempo de leitura */}
               {noticia.author && <span>Por {noticia.author}</span>}
               {noticia.source && <span>{noticia.source}</span>}
             </div>
