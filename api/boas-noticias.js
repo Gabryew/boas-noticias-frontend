@@ -1,5 +1,4 @@
 import Parser from "rss-parser";
-
 const parser = new Parser();
 
 const RSS_FEEDS = [
@@ -8,8 +7,6 @@ const RSS_FEEDS = [
   "https://www.catracalivre.com.br/feed/",
   "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
   "https://www.cnnbrasil.com.br/rss/",
-  // Adicione feeds que você souber que contêm imagens, como testes
-  // "https://feeds.feedburner.com/blogspot/MKuf",
 ];
 
 // Função para limpar e preparar o texto
@@ -37,6 +34,21 @@ function extractImage(item) {
   }
 
   return null;
+}
+
+// Extrai o nome do veículo a partir do link da notícia
+function extractSourceFromLink(link) {
+  try {
+    const url = new URL(link);
+    const hostname = url.hostname.replace("www.", "");
+    const parts = hostname.split(".");
+    if (parts.length > 1) {
+      return parts[0].toUpperCase(); // Ex: g1.globo.com → G1
+    }
+    return hostname.toUpperCase();
+  } catch (e) {
+    return null;
+  }
 }
 
 // Classifica a notícia com base em palavras-chave
@@ -84,8 +96,10 @@ export default async (req, res) => {
 
       const noticiasClassificadas = feed.items.map(item => {
         const { classification, image } = classifyNews(item);
+        const source = extractSourceFromLink(item.link);
+        const author = item.creator || item.author || null;
 
-        console.log(`[DEBUG] ${item.title} => imagem: ${image}`); // 🔍 Log de debug
+        console.log(`[DEBUG] ${item.title} => imagem: ${image}`);
 
         return {
           title: item.title,
@@ -94,6 +108,8 @@ export default async (req, res) => {
           pubDate: item.pubDate,
           classification,
           image,
+          author,
+          source,
         };
       });
 
