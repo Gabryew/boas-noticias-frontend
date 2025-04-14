@@ -91,9 +91,10 @@ export default function Home() {
               {noticia.title}
             </h1>
             <div className="text-sm text-gray-300 flex flex-wrap gap-4 font-light">
-              {noticia.readingTime && <span>{noticia.readingTime}</span>} {/* Exibindo o tempo de leitura */}
-              {noticia.author && <span>Por {noticia.author}</span>}
-              {noticia.source && <span>{noticia.source}</span>}
+              {noticia.source && <span>{noticia.source}</span>} {/* Exibindo a fonte */}
+            </div>
+            <div className="text-sm text-gray-300 font-light">
+              {noticia.readingTime && <span>Tempo de leitura: {noticia.readingTime}</span>} {/* Exibindo o tempo de leitura */}
             </div>
           </div>
         </motion.div>
