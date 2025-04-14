@@ -1,19 +1,13 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { Play, Pause } from "lucide-react";
 
 export default function Noticia() {
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [ouvir, setOuvir] = useState(false);
   const [tempoLeitura, setTempoLeitura] = useState(0);
   const [progresso, setProgresso] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const audioRef = useRef(null);
-  const utteranceRef = useRef(null);
   const { link } = useParams();
   const navigate = useNavigate();
 
@@ -60,20 +54,6 @@ export default function Noticia() {
     const min = String(Math.floor(segundos / 60)).padStart(2, "0");
     const sec = String(Math.floor(segundos % 60)).padStart(2, "0");
     return `${min}:${sec}`;
-  };
-
-  const toggleAudio = () => {
-    if (ouvir) {
-      window.speechSynthesis.cancel();
-      setOuvir(false);
-    } else {
-      const utterance = new SpeechSynthesisUtterance(noticia.summary);
-      utterance.lang = "pt-BR";
-      utterance.onend = () => setOuvir(false);
-      utteranceRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
-      setOuvir(true);
-    }
   };
 
   useEffect(() => {
@@ -141,17 +121,6 @@ export default function Noticia() {
         </div>
 
         <p className="text-sm text-gray-300">⏱️ Tempo de leitura: {tempoLeitura} mins</p>
-
-        {/* Player de áudio */}
-        <div className="bg-white/10 p-4 rounded-xl flex flex-col gap-2">
-          <button
-            onClick={toggleAudio}
-            className="p-2 bg-white text-black rounded-full hover:scale-110 transition"
-          >
-            {ouvir ? <Pause size={20} /> : <Play size={20} />}
-          </button>
-          <span className="text-sm text-gray-300">{ouvir ? "Ouvindo notícia..." : "Ouvir notícia"}</span>
-        </div>
 
         {/* Texto da notícia */}
         <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
