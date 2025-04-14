@@ -27,7 +27,9 @@ export default function Noticia({ modoNoturno }) {
   // Verifique se o id corresponde ao índice de uma notícia existente
   useEffect(() => {
     if (noticias.length > 0 && id !== undefined) {
-      const noticiaEncontrada = noticias[id]; // Acessa a notícia com base no id
+      const noticiaId = parseInt(id); // Certificando que o id é numérico
+      console.log("ID da URL:", noticiaId); // Verificando o id
+      const noticiaEncontrada = noticias[noticiaId]; // Acessa a notícia com base no id
       console.log("Notícia encontrada:", noticiaEncontrada); // Verificando a notícia encontrada
       setNoticia(noticiaEncontrada);
     }
