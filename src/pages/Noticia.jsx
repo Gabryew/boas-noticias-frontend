@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Noticia() {
   const [noticia, setNoticia] = useState(null);
@@ -7,6 +9,8 @@ export default function Noticia() {
   const [speechInstance, setSpeechInstance] = useState(null); // Para guardar a instância do SpeechSynthesisUtterance
   const [currentTime, setCurrentTime] = useState(0); // Para controlar o progresso
   const [duration, setDuration] = useState(0); // Para a duração total da leitura
+  const { link } = useParams();
+  const navigate = useNavigate();
 
   // Função para ouvir o texto
   const ouvirTexto = () => {
@@ -21,10 +25,10 @@ export default function Noticia() {
     } else {
       const texto = noticia.summary;
       const utterance = new SpeechSynthesisUtterance(texto);
-      
+
       // Atualiza a duração da leitura quando o texto começar a ser lido
       utterance.onstart = () => {
-        setDuration(texto.split(/\s+/).length / 200); // Tempo de leitura estimado
+        setDuration(texto.split(/\s+/).length / 200); // Estimativa do tempo de leitura
         setIsPlaying(true);
       };
 
@@ -32,7 +36,7 @@ export default function Noticia() {
       utterance.onboundary = (event) => {
         const totalWords = texto.split(/\s+/).length;
         const wordsRead = event.charIndex / totalWords;
-        setCurrentTime(wordsRead * duration); // Atualiza a linha do tempo com base nas palavras lidas
+        setCurrentTime(wordsRead * duration); // Atualiza a linha do tempo
       };
 
       utterance.onend = () => {
@@ -45,7 +49,7 @@ export default function Noticia() {
     }
   };
 
-  // Função para manipular o progresso (usando o controle de linha do tempo)
+  // Função para manipular o progresso (linha do tempo)
   const handleTimeChange = (event) => {
     const newTime = event.target.value;
     setCurrentTime(newTime);
@@ -61,7 +65,6 @@ export default function Noticia() {
     }
   };
 
-  // Usando o useEffect para carregar os dados da notícia
   useEffect(() => {
     async function fetchNoticia() {
       try {
@@ -138,7 +141,7 @@ export default function Noticia() {
           >
             {isPlaying ? "Pausar" : "Reproduzir"}
           </button>
-          
+
           {/* Linha do tempo */}
           <input
             type="range"
