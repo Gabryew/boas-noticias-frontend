@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 
 export default function Noticia() {
   const [noticia, setNoticia] = useState(null);
+  const [outrasNoticias, setOutrasNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tempoLeitura, setTempoLeitura] = useState(0);
   const [progresso, setProgresso] = useState(0);
@@ -19,6 +20,13 @@ export default function Noticia() {
         if (noticiaEncontrada) {
           setNoticia(noticiaEncontrada);
           calcularTempoLeitura(noticiaEncontrada.summary);
+
+          // Carregar outras 3 notícias aleatórias
+          const outras = response.data
+            .filter((n) => n.link !== link)
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 3);
+          setOutrasNoticias(outras);
         } else {
           navigate("/");
         }
@@ -106,7 +114,7 @@ export default function Noticia() {
           backgroundImage: `url(${noticia.image || "default-image.jpg"})`,
         }}
       />
-      
+
       {/* Conteúdo da notícia */}
       <div className="max-w-3xl mx-auto p-6 space-y-6">
         <div className="space-y-1">
@@ -122,7 +130,6 @@ export default function Noticia() {
 
         <p className="text-sm text-gray-300">⏱️ Tempo de leitura: {tempoLeitura} mins</p>
 
-        {/* Texto da notícia */}
         <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
           {noticia.summary
             .split("\n")
@@ -154,29 +161,29 @@ export default function Noticia() {
             Compartilhar
           </button>
         </div>
-
-        {/* Outras notícias */}
-        {noticia.outros && noticia.outros.length > 0 && (
-          <div className="mt-12 space-y-6">
-            <h2 className="text-2xl font-bold">Outras notícias</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {noticia.outros.map((outra, i) => (
-                <div
-                  key={i}
-                  onClick={() => navigate(`/noticia/${encodeURIComponent(outra.link)}`)}
-                  className="cursor-pointer group"
-                >
-                  <div
-                    className="h-40 bg-cover bg-center rounded-xl mb-2"
-                    style={{ backgroundImage: `url(${outra.image || "default-image.jpg"})` }}
-                  />
-                  <p className="group-hover:underline">{outra.title}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Outras notícias no fim da página */}
+      {outrasNoticias.length > 0 && (
+        <div className="max-w-6xl mx-auto p-6 mt-12 space-y-6">
+          <h2 className="text-2xl font-bold">Outras notícias para você</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {outrasNoticias.map((outra, i) => (
+              <div
+                key={i}
+                onClick={() => navigate(`/noticia/${encodeURIComponent(outra.link)}`)}
+                className="cursor-pointer group"
+              >
+                <div
+                  className="h-40 bg-cover bg-center rounded-xl mb-2"
+                  style={{ backgroundImage: `url(${outra.image || "default-image.jpg"})` }}
+                />
+                <p className="group-hover:underline">{outra.title}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
