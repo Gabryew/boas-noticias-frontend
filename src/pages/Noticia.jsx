@@ -1,42 +1,73 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useState, useEffect } from "react";
 
 export default function Noticia() {
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [noticias, setNoticias] = useState([]);
-  const { link } = useParams(); // Obtém o link da URL
-  const navigate = useNavigate();
-
-  // Função para calcular tempo de leitura estimado
-  const calcularTempoLeitura = (texto) => {
-    const palavrasPorMinuto = 200;
-    const palavras = texto.split(/\s+/).length;
-    return Math.ceil(palavras / palavrasPorMinuto);
-  };
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [speechInstance, setSpeechInstance] = useState(null); // Para guardar a instância do SpeechSynthesisUtterance
+  const [currentTime, setCurrentTime] = useState(0); // Para controlar o progresso
+  const [duration, setDuration] = useState(0); // Para a duração total da leitura
 
   // Função para ouvir o texto
   const ouvirTexto = () => {
-    const texto = noticia.summary;
-    const utterance = new SpeechSynthesisUtterance(texto);
-    window.speechSynthesis.speak(utterance);
+    if (speechInstance) {
+      if (isPlaying) {
+        window.speechSynthesis.pause();
+        setIsPlaying(false);
+      } else {
+        window.speechSynthesis.resume();
+        setIsPlaying(true);
+      }
+    } else {
+      const texto = noticia.summary;
+      const utterance = new SpeechSynthesisUtterance(texto);
+      
+      // Atualiza a duração da leitura quando o texto começar a ser lido
+      utterance.onstart = () => {
+        setDuration(texto.split(/\s+/).length / 200); // Tempo de leitura estimado
+        setIsPlaying(true);
+      };
+
+      // Atualiza o progresso do áudio enquanto ele estiver sendo lido
+      utterance.onboundary = (event) => {
+        const totalWords = texto.split(/\s+/).length;
+        const wordsRead = event.charIndex / totalWords;
+        setCurrentTime(wordsRead * duration); // Atualiza a linha do tempo com base nas palavras lidas
+      };
+
+      utterance.onend = () => {
+        setIsPlaying(false);
+        setCurrentTime(0);
+      };
+
+      window.speechSynthesis.speak(utterance);
+      setSpeechInstance(utterance);
+    }
   };
 
-  // Função para obter a porcentagem de progresso conforme o usuário rola
-  const calcularProgressoScroll = () => {
-    const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const currentPosition = window.scrollY;
-    setScrollProgress((currentPosition / totalHeight) * 100);
+  // Função para manipular o progresso (usando o controle de linha do tempo)
+  const handleTimeChange = (event) => {
+    const newTime = event.target.value;
+    setCurrentTime(newTime);
+
+    if (speechInstance) {
+      const texto = noticia.summary;
+      const totalWords = texto.split(/\s+/).length;
+      const targetWordIndex = Math.floor((newTime / duration) * totalWords);
+      speechInstance.cancel();
+      const utterance = new SpeechSynthesisUtterance(texto.slice(targetWordIndex));
+      window.speechSynthesis.speak(utterance);
+      setSpeechInstance(utterance);
+    }
   };
 
+  // Usando o useEffect para carregar os dados da notícia
   useEffect(() => {
     async function fetchNoticia() {
       try {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         const noticiaEncontrada = response.data.find(
-          (n) => n.link === link // Comparação direta aqui
+          (n) => n.link === link
         );
 
         if (noticiaEncontrada) {
@@ -44,8 +75,6 @@ export default function Noticia() {
         } else {
           navigate("/"); // Redireciona para a home se a notícia não for encontrada
         }
-
-        setNoticias(response.data); // Armazena todas as notícias para sugerir outras
       } catch (error) {
         console.error("Erro ao buscar a notícia:", error);
       } finally {
@@ -54,27 +83,7 @@ export default function Noticia() {
     }
 
     fetchNoticia();
-    window.addEventListener("scroll", calcularProgressoScroll);
-
-    return () => {
-      window.removeEventListener("scroll", calcularProgressoScroll);
-    };
-  }, [link, navigate]); // Certificando-se de que o link e o navigate estão corretos
-
-  const compartilharNoticia = () => {
-    if (navigator.share) {
-      navigator
-        .share({
-          title: noticia.title,
-          text: noticia.summary,
-          url: noticia.link,
-        })
-        .then(() => console.log("Notícia compartilhada com sucesso!"))
-        .catch((error) => console.error("Erro ao compartilhar a notícia:", error));
-    } else {
-      alert("Compartilhamento não suportado neste navegador.");
-    }
-  };
+  }, [link, navigate]);
 
   if (loading) {
     return (
@@ -94,12 +103,6 @@ export default function Noticia() {
 
   return (
     <div className="bg-black text-white min-h-screen">
-      {/* Barra de progresso de rolagem */}
-      <div
-        className="w-full h-1 bg-blue-500 fixed top-0 z-50"
-        style={{ width: `${scrollProgress}%` }}
-      ></div>
-
       {/* Imagem principal */}
       <div
         className="h-64 md:h-96 bg-cover bg-center"
@@ -118,73 +121,34 @@ export default function Noticia() {
             <span>{new Date(noticia.pubDate).toLocaleDateString()}</span>
             {noticia.author && <span>Por {noticia.author}</span>}
             {noticia.source && <span>Fonte: {noticia.source}</span>}
-            <span>{calcularTempoLeitura(noticia.summary)} min de leitura</span>
           </div>
         </div>
 
-        {/* Resumo da notícia */}
         <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
           {noticia.summary
             .split("\n")
             .map((par, i) => <p key={i}>{par.trim()}</p>)}
         </div>
 
-        <div className="flex gap-4">
-          <a
-            href={noticia.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full text-center"
-          >
-            Ler no site original
-          </a>
-
-          {/* Botão de compartilhamento */}
-          <button
-            onClick={compartilharNoticia}
-            className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full text-center"
-          >
-            Compartilhar
-          </button>
-
-          {/* Botão de ouvir notícia */}
+        {/* Player de áudio */}
+        <div className="flex items-center space-x-4 mt-6">
           <button
             onClick={ouvirTexto}
-            className="inline-block bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full text-center"
+            className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-xl"
           >
-            Ouvir Notícia
+            {isPlaying ? "Pausar" : "Reproduzir"}
           </button>
-        </div>
-
-        {/* Botão para voltar à Home */}
-        <button
-          onClick={() => navigate("/")}
-          className="inline-block bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold mt-4 transition"
-        >
-          Voltar para Home
-        </button>
-
-        {/* Sugerir outras notícias */}
-        <div className="mt-8">
-          <h2 className="text-2xl font-semibold">Outras notícias:</h2>
-          <div className="space-y-4 mt-4">
-            {noticias
-              .filter((n) => n.link !== noticia.link)
-              .slice(0, 3) // Exibe 3 outras notícias
-              .map((n) => (
-                <div key={n.link} className="flex flex-col space-y-2">
-                  <a
-                    href={n.link}
-                    className="text-lg font-semibold hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {n.title}
-                  </a>
-                  <p className="text-sm text-gray-400">{new Date(n.pubDate).toLocaleDateString()}</p>
-                </div>
-              ))}
-          </div>
+          
+          {/* Linha do tempo */}
+          <input
+            type="range"
+            min="0"
+            max={duration}
+            value={currentTime}
+            onChange={handleTimeChange}
+            className="w-full"
+          />
+          <span>{Math.round(currentTime)} / {Math.round(duration)}</span>
         </div>
       </div>
     </div>
