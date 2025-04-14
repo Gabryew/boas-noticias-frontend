@@ -36,11 +36,11 @@ function App() {
         </button>
         <Routes>
           <Route path="/" element={<Home modoNoturno={modoNoturno} />} />
-          <Route path="/noticia/:id" element={<Noticia modoNoturno={modoNoturno} />} />
+          <Route path="/noticia/:link" element={<Noticia modoNoturno={modoNoturno} />} />
         </Routes>
       </div>
     </Router>
   );
 }
 
-export default App;  {/* Certifique-se de exportar dessa forma */}
+export default App;

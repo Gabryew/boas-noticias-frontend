@@ -35,19 +35,23 @@ export default function Home() {
         <div
           key={index}
           className="w-screen h-screen snap-start flex flex-col justify-end relative text-white"
-          style={{
-            backgroundImage: `url(${noticia.image || "default-image.jpg"})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          }}
         >
+          <img
+            src={noticia.image || "/default-image.jpg"}
+            alt={noticia.title}
+            className="w-full h-full object-cover"
+          />
           <div className="bg-black/60 p-6 backdrop-blur-sm w-full">
             <h1 className="text-2xl font-bold mb-2">{noticia.title}</h1>
             <p className="text-sm">
               {new Date(noticia.pubDate).toLocaleDateString()}
             </p>
-            <Link to={`/noticia/${index}`} className="text-blue-400 underline mt-4">Ler mais</Link>
+            <Link
+              to={`/noticia/${encodeURIComponent(noticia.link)}`}
+              className="text-blue-400 underline mt-4"
+            >
+              Ler mais
+            </Link>
           </div>
         </div>
       ))}

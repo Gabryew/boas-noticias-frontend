@@ -1,15 +1,15 @@
 import Parser from "rss-parser";
 
-// Instanciando o Parser RSS
 const parser = new Parser();
 
-// Lista de feeds RSS a serem analisados
 const RSS_FEEDS = [
   "https://g1.globo.com/rss/g1/",
   "https://www.bbc.com/portuguese/index.xml",
   "https://www.catracalivre.com.br/feed/",
   "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
   "https://www.cnnbrasil.com.br/rss/",
+  // Adicione feeds que você souber que contêm imagens, como testes
+  // "https://feeds.feedburner.com/blogspot/MKuf",
 ];
 
 // Função para limpar e preparar o texto
@@ -17,20 +17,29 @@ function cleanText(text) {
   return text.replace(/[^\w\s]/g, "").toLowerCase();
 }
 
-// Extrai a imagem do item RSS, se houver
+// Função aprimorada para extrair imagem de diversos campos
 function extractImage(item) {
-  if (item.enclosure?.url) return item.enclosure.url;
-  if (item["media:content"]?.url) return item["media:content"].url;
+  const possibleFields = [
+    item.enclosure?.url,
+    item["media:content"]?.url,
+    item["content:encoded"],
+    item["content"],
+    item["summary"],
+    item["content:encodedSnippet"],
+    item["summaryDetail"]?.value,
+  ];
 
-  if (item["content:encoded"]) {
-    const match = item["content:encoded"].match(/<img[^>]+src="([^">]+)"/);
-    if (match) return match[1];
+  for (const field of possibleFields) {
+    if (typeof field === "string") {
+      const match = field.match(/<img[^>]+src="([^">]+)"/);
+      if (match) return match[1];
+    }
   }
 
   return null;
 }
 
-// Classifica a notícia com base nas palavras-chave
+// Classifica a notícia com base em palavras-chave
 function classifyNews(noticia) {
   const text = cleanText(`${noticia.title} ${noticia.contentSnippet || ""}`);
   let score = 0;
@@ -75,6 +84,8 @@ export default async (req, res) => {
 
       const noticiasClassificadas = feed.items.map(item => {
         const { classification, image } = classifyNews(item);
+
+        console.log(`[DEBUG] ${item.title} => imagem: ${image}`); // 🔍 Log de debug
 
         return {
           title: item.title,
