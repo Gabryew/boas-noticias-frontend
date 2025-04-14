@@ -3,7 +3,6 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-// Função para calcular o tempo de leitura
 function calcularTempoLeitura(texto) {
   if (!texto) return null;
   const palavras = texto.trim().split(/\s+/).length;
@@ -15,28 +14,22 @@ function calcularTempoLeitura(texto) {
 export default function Home() {
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1); // Controle de página
-  const [hasMore, setHasMore] = useState(true); // Verifica se há mais notícias
+  const [salvas, setSalvas] = useState([]); // Estado para notícias salvas
   const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchNoticias() {
       try {
-        setLoading(true);
-        const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias", {
-          params: { page } // Envia a página para a API
-        });
-        
-        if (response.data.length === 0) {
-          setHasMore(false); // Se não houver mais notícias, desabilita o infinite scroll
-        }
-        
+        const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         const noticiasComTempo = response.data.map((noticia) => ({
           ...noticia,
-          readingTime: calcularTempoLeitura(noticia.content || noticia.summary), // Calculando o tempo de leitura
+          readingTime: calcularTempoLeitura(noticia.content),
         }));
-        
-        setNoticias((prevNoticias) => [...prevNoticias, ...noticiasComTempo]); // Adiciona as novas notícias à lista
+        setNoticias(noticiasComTempo);
+
+        // Carregar notícias salvas do localStorage
+        const noticiasSalvas = JSON.parse(localStorage.getItem("noticiasSalvas")) || [];
+        setSalvas(noticiasSalvas);
       } catch (error) {
         console.error("Erro ao buscar notícias:", error);
       } finally {
@@ -45,16 +38,23 @@ export default function Home() {
     }
 
     fetchNoticias();
-  }, [page]); // Carregar mais notícias sempre que a página mudar
+  }, []);
 
-  const handleScroll = (e) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.target;
-    if (scrollHeight - scrollTop <= clientHeight + 100 && hasMore && !loading) {
-      setPage((prevPage) => prevPage + 1); // Carregar mais notícias
+  const salvarNoticia = (noticia) => {
+    const novasSalvas = [...salvas];
+    const index = novasSalvas.findIndex((n) => n.link === noticia.link);
+    if (index === -1) {
+      novasSalvas.push(noticia);
+    } else {
+      novasSalvas.splice(index, 1); // Se já estiver salva, remove
     }
+
+    // Atualizar o localStorage
+    localStorage.setItem("noticiasSalvas", JSON.stringify(novasSalvas));
+    setSalvas(novasSalvas);
   };
 
-  if (loading && page === 1) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-black">
         <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
@@ -63,10 +63,7 @@ export default function Home() {
   }
 
   return (
-    <div
-      className="w-screen h-screen overflow-y-scroll snap-y snap-mandatory bg-black text-white"
-      onScroll={handleScroll}
-    >
+    <div className="w-screen h-screen overflow-y-scroll snap-y snap-mandatory bg-black text-white">
       {noticias.map((noticia, index) => (
         <motion.div
           key={index}
@@ -82,28 +79,31 @@ export default function Home() {
             backgroundRepeat: "no-repeat",
           }}
         >
-          {/* Gradiente de fundo para legibilidade */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-0" />
 
-          {/* Conteúdo */}
           <div className="relative z-10 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm">
             <h1 className="text-3xl md:text-4xl font-extrabold leading-tight drop-shadow-lg">
               {noticia.title}
             </h1>
             <div className="text-sm text-gray-300 flex flex-wrap gap-4 font-light">
-              {noticia.source && <span>{noticia.source}</span>} {/* Exibindo a fonte */}
+              <span>{noticia.source}</span>
+              {noticia.readingTime && <span>Tempo de leitura: {noticia.readingTime}</span>}
             </div>
-            <div className="text-sm text-gray-300 font-light">
-              {noticia.readingTime && <span>Tempo de leitura: {noticia.readingTime}</span>} {/* Exibindo o tempo de leitura */}
-            </div>
+
+            {/* Ícone de salvar */}
+            <button
+              onClick={() => salvarNoticia(noticia)}
+              className="absolute top-4 right-4 text-white text-3xl"
+            >
+              {salvas.some((n) => n.link === noticia.link) ? (
+                <span>❤️</span> // Coração preenchido se já estiver salva
+              ) : (
+                <span>🤍</span> // Coração vazio
+              )}
+            </button>
           </div>
         </motion.div>
       ))}
-      {loading && page > 1 && (
-        <div className="flex items-center justify-center py-4 bg-black">
-          <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
-        </div>
-      )}
     </div>
   );
 }
