@@ -49,28 +49,43 @@ export default function Noticia({ modoNoturno }) {
 
   return (
     <div
-      className="w-full h-full p-4"
-      style={{
-        backgroundColor: modoNoturno ? "#333" : "#f8f9fa",
-        color: modoNoturno ? "#f8f9fa" : "#333",
-      }}
+      className={`w-full h-full p-6 ${
+        modoNoturno ? "bg-gray-900 text-white" : "bg-white text-gray-900"
+      }`}
     >
-      <h1 className="text-3xl font-bold mb-4">{noticia.title}</h1>
-      <p className="text-sm">{new Date(noticia.pubDate).toLocaleDateString()}</p>
-      <img
-        src={noticia.image || "default-image.jpg"}
-        alt={noticia.title}
-        className="mt-4 mb-6 w-full h-auto object-cover"
-      />
-      <p>{noticia.summary}</p>
-      <a
-        href={noticia.link}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-500 underline mt-4"
-      >
-        Leia mais no site original
-      </a>
+      <header className="flex justify-between items-center mb-8">
+        <button
+          onClick={() => navigate("/")}
+          className="text-lg font-semibold text-blue-500 hover:text-blue-700 transition duration-300"
+        >
+          Voltar para a Home
+        </button>
+        <p className="text-sm">{new Date(noticia.pubDate).toLocaleDateString()}</p>
+      </header>
+
+      <div className="rounded-lg shadow-lg overflow-hidden mb-8">
+        <img
+          src={noticia.image || "default-image.jpg"}
+          alt={noticia.title}
+          className="w-full h-96 object-cover"
+        />
+      </div>
+
+      <div className="space-y-6">
+        <h1 className="text-4xl font-bold">{noticia.title}</h1>
+        <p className="text-lg">{noticia.summary}</p>
+      </div>
+
+      <div className="mt-8">
+        <a
+          href={noticia.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block bg-blue-500 text-white text-lg py-3 px-6 rounded-lg hover:bg-blue-600 transition duration-300"
+        >
+          Leia mais no site original
+        </a>
+      </div>
     </div>
   );
 }
