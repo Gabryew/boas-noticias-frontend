@@ -8,7 +8,9 @@ export default function Home() {
   useEffect(() => {
     async function fetchNoticias() {
       try {
-        const response = await axios.get("/api/boas-noticias");
+        const response = await axios.get(
+          "https://boas-noticias-frontend.vercel.app/api/boas-noticias"
+        );
         setNoticias(response.data);
       } catch (error) {
         console.error("Erro ao buscar notícias:", error);
