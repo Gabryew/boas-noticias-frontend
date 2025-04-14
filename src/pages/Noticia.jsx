@@ -8,6 +8,7 @@ export default function Noticia() {
   const { link } = useParams(); // Obtém o link da URL
   const navigate = useNavigate();
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [noticias, setNoticias] = useState([]);
 
   // Função para calcular tempo de leitura estimado
   const calcularTempoLeitura = (texto) => {
@@ -46,6 +47,9 @@ export default function Noticia() {
           // Redireciona para a home se não encontrar a notícia
           navigate("/");
         }
+
+        // Armazenando todas as notícias para exibir outras
+        setNoticias(response.data);
       } catch (error) {
         console.error("Erro ao buscar a notícia:", error);
       } finally {
@@ -148,6 +152,11 @@ export default function Noticia() {
           {noticia.summary
             .split("\n")
             .map((par, i) => <p key={i}>{par.trim()}</p>)}
+        </div>
+
+        {/* Tempo de leitura */}
+        <div className="text-sm text-gray-400">
+          Tempo de leitura: {calcularTempoLeitura(noticia.summary)} minutos
         </div>
 
         {/* Botão para voltar à Home */}
