@@ -12,23 +12,6 @@ const RSS_FEEDS = [
   "https://www.cnnbrasil.com.br/rss/",
 ];
 
-// Palavras-chave para classificar as notícias
-const positiveKeywords = [
-  "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
-  "conquista", "inovação", "superação", "melhoria", "comunidade", "ajuda", "preservação", 
-  "vacinado", "campanha", "educação", "recuperação", "aliança", "progresso", "acolhimento", 
-  "inclusão", "emprego", "renovação", "acordo", "projeto social", "salvamento", "renascimento", 
-  "ajuda humanitária", "medicação", "apoio", "expansão"
-];
-
-const negativeKeywords = [
-  "tragédia", "morte", "assassinato", "crime", "violência", "desastre", "incêndio", "fogo", 
-  "desabamento", "acidente", "explosão", "tragicamente", "colapso", "guerra", "conflito", 
-  "corrupção", "fraude", "crise", "falência", "dano", "assalto", "ferido", "infecção", 
-  "envenenamento", "atentado", "caos", "inundação", "desespero", "lockdown", "pandemia", 
-  "falta de", "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
-];
-
 // Função para limpar e preparar o texto
 function cleanText(text) {
   return text.replace(/[^\w\s]/g, "").toLowerCase();
@@ -51,6 +34,22 @@ function extractImage(item) {
 function classifyNews(noticia) {
   const text = cleanText(`${noticia.title} ${noticia.contentSnippet || ""}`);
   let score = 0;
+
+  const positiveKeywords = [
+    "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
+    "conquista", "inovação", "superação", "melhoria", "comunidade", "ajuda", "preservação", 
+    "vacinado", "campanha", "educação", "recuperação", "aliança", "progresso", "acolhimento", 
+    "inclusão", "emprego", "renovação", "acordo", "projeto social", "salvamento", "renascimento", 
+    "ajuda humanitária", "medicação", "apoio", "expansão"
+  ];
+
+  const negativeKeywords = [
+    "tragédia", "morte", "assassinato", "crime", "violência", "desastre", "incêndio", "fogo", 
+    "desabamento", "acidente", "explosão", "tragicamente", "colapso", "guerra", "conflito", 
+    "corrupção", "fraude", "crise", "falência", "dano", "assalto", "ferido", "infecção", 
+    "envenenamento", "atentado", "caos", "inundação", "desespero", "lockdown", "pandemia", 
+    "falta de", "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
+  ];
 
   positiveKeywords.forEach(word => {
     if (text.includes(word)) score += 1;

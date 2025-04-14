@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   const [noticias, setNoticias] = useState([]);
@@ -35,7 +36,7 @@ export default function Home() {
           key={index}
           className="w-screen h-screen snap-start flex flex-col justify-end relative text-white"
           style={{
-            backgroundImage: `url(${noticia.imagem || ""})`,
+            backgroundImage: `url(${noticia.image || "default-image.jpg"})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
@@ -44,9 +45,9 @@ export default function Home() {
           <div className="bg-black/60 p-6 backdrop-blur-sm w-full">
             <h1 className="text-2xl font-bold mb-2">{noticia.title}</h1>
             <p className="text-sm">
-              {noticia.autor} ({noticia.veiculo}) •{" "}
               {new Date(noticia.pubDate).toLocaleDateString()}
             </p>
+            <Link to={`/noticia/${index}`} className="text-blue-400 underline mt-4">Ler mais</Link>
           </div>
         </div>
       ))}

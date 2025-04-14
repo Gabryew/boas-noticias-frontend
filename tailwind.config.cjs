@@ -1,11 +1,9 @@
-// tailwind.config.cjs
 module.exports = {
   content: [
-    "./index.html", 
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{html,js,jsx}",
   ],
   theme: {
     extend: {},
   },
   plugins: [],
-};
+}

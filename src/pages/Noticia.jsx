@@ -35,7 +35,7 @@ export default function Noticia() {
       <h1 className="text-3xl font-bold">{noticia.title}</h1>
       <p className="text-sm">{noticia.summary}</p>
       <div className="mt-4">
-        <img src={noticia.imagem} alt={noticia.title} className="w-full h-auto" />
+        <img src={noticia.image} alt={noticia.title} className="w-full h-auto" />
       </div>
       <div className="mt-4">
         <p>{noticia.content}</p>
