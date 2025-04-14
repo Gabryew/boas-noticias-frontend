@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 
 export default function Home() {
   const [noticias, setNoticias] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchNoticias() {
@@ -12,51 +11,46 @@ export default function Home() {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         setNoticias(response.data);
       } catch (error) {
-        console.error("Erro ao buscar notícias:", error);
-      } finally {
-        setLoading(false);
+        console.error("Erro ao carregar notícias:", error);
       }
     }
 
     fetchNoticias();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-black text-white text-xl">
-        Carregando notícias...
-      </div>
-    );
-  }
-
   return (
-    <div className="w-screen h-screen overflow-y-scroll snap-y snap-mandatory bg-black">
-      {noticias.map((noticia, index) => (
-        <Link
-          to={`/noticia/${encodeURIComponent(noticia.link)}`}
-          key={index}
-          className="w-screen h-screen snap-start relative block"
-        >
-          <div
-            className="w-full h-full bg-cover bg-center flex items-end"
-            style={{
-              backgroundImage: `url(${noticia.image || "default-image.jpg"})`,
-            }}
+    <div className="bg-black text-white min-h-screen py-8 px-4 md:px-8">
+      <h1 className="text-3xl font-bold mb-8 text-center">📰 Boas Notícias</h1>
+
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        {noticias.map((noticia, index) => (
+          <Link
+            to={`/noticia/${encodeURIComponent(noticia.link)}`}
+            key={index}
+            className="block group rounded-xl overflow-hidden bg-zinc-900 shadow-lg hover:shadow-2xl transition-all"
           >
-            <div className="w-full bg-black/60 p-6 backdrop-blur-sm">
-              <h1 className="text-2xl font-bold text-white mb-2 leading-snug">
+            {noticia.image && (
+              <img
+                src={noticia.image}
+                alt={noticia.title}
+                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            )}
+
+            <div className="p-4 space-y-2">
+              <h2 className="text-xl font-semibold group-hover:text-blue-400 transition">
                 {noticia.title}
-              </h1>
-              <div className="flex justify-between text-sm text-gray-300">
+              </h2>
+
+              <div className="text-sm text-gray-400 flex gap-4 flex-wrap">
                 <span>{new Date(noticia.pubDate).toLocaleDateString()}</span>
-                <span>
-                  {noticia.author} ({noticia.source})
-                </span>
+                {noticia.author && <span>Por {noticia.author}</span>}
+                {noticia.source && <span>{noticia.source}</span>}
               </div>
             </div>
-          </div>
-        </Link>
-      ))}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
