@@ -5,21 +5,19 @@ import axios from "axios";
 export default function Noticia({ modoNoturno }) {
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { link } = useParams();  // Recupera o parâmetro da URL
-  const navigate = useNavigate();  // Função para navegação
+  const { link } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchNoticia() {
       try {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
-        const noticiaEncontrada = response.data.find(
-          (n) => n.link === link // Comparando o link da URL com o link da notícia
-        );
+        const noticiaEncontrada = response.data.find((n) => n.link === link);
 
         if (noticiaEncontrada) {
           setNoticia(noticiaEncontrada);
         } else {
-          navigate("/"); // Caso não encontre, redireciona para a home
+          navigate("/");
         }
       } catch (error) {
         console.error("Erro ao buscar a notícia:", error);
@@ -29,7 +27,7 @@ export default function Noticia({ modoNoturno }) {
     }
 
     fetchNoticia();
-  }, [link, navigate]); // Recarrega a notícia se o link mudar
+  }, [link, navigate]);
 
   if (loading) {
     return (
@@ -47,44 +45,54 @@ export default function Noticia({ modoNoturno }) {
     );
   }
 
+  // Função opcional para tentar quebrar o summary em parágrafos
+  const paragrafos = noticia.summary.split(/\n\s*\n|\. +/).filter(p => p.trim().length > 0);
+
   return (
     <div
-      className={`w-full h-full p-6 ${
+      className={`min-h-screen p-6 ${
         modoNoturno ? "bg-gray-900 text-white" : "bg-white text-gray-900"
       }`}
     >
-      <header className="flex justify-between items-center mb-8">
-        <button
-          onClick={() => navigate("/")}
-          className="text-lg font-semibold text-blue-500 hover:text-blue-700 transition duration-300"
-        >
-          Voltar para a Home
-        </button>
-        <p className="text-sm">{new Date(noticia.pubDate).toLocaleDateString()}</p>
-      </header>
+      <div className="max-w-3xl mx-auto">
+        <header className="flex justify-between items-center mb-8">
+          <button
+            onClick={() => navigate("/")}
+            className="text-lg font-semibold text-blue-500 hover:text-blue-700 transition duration-300"
+          >
+            ← Voltar para a Home
+          </button>
+          <p className="text-sm opacity-70">
+            {new Date(noticia.pubDate).toLocaleDateString()}
+          </p>
+        </header>
 
-      <div className="rounded-lg shadow-lg overflow-hidden mb-8">
-        <img
-          src={noticia.image || "default-image.jpg"}
-          alt={noticia.title}
-          className="w-full h-96 object-cover"
-        />
-      </div>
+        <div className="rounded-xl overflow-hidden shadow-lg mb-6">
+          <img
+            src={noticia.image || "default-image.jpg"}
+            alt={noticia.title}
+            className="w-full h-80 object-cover"
+          />
+        </div>
 
-      <div className="space-y-6">
-        <h1 className="text-4xl font-bold">{noticia.title}</h1>
-        <p className="text-lg">{noticia.summary}</p>
-      </div>
+        <h1 className="text-4xl font-bold mb-6 leading-tight">{noticia.title}</h1>
 
-      <div className="mt-8">
-        <a
-          href={noticia.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block bg-blue-500 text-white text-lg py-3 px-6 rounded-lg hover:bg-blue-600 transition duration-300"
-        >
-          Leia mais no site original
-        </a>
+        <article className="prose prose-lg dark:prose-invert max-w-none">
+          {paragrafos.map((par, i) => (
+            <p key={i}>{par}</p>
+          ))}
+        </article>
+
+        <div className="mt-10">
+          <a
+            href={noticia.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-blue-500 text-white text-lg py-3 px-6 rounded-lg hover:bg-blue-600 transition duration-300"
+          >
+            Leia mais no site original
+          </a>
+        </div>
       </div>
     </div>
   );
