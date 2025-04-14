@@ -3,27 +3,35 @@ import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 
 export default function Noticia({ modoNoturno }) {
-  const { id } = useParams();
+  const { id } = useParams(); // Obtemos o id da URL
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [noticias, setNoticias] = useState([]);
 
   useEffect(() => {
-    async function fetchNoticia() {
+    async function fetchNoticias() {
       try {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
-        console.log(response.data); // Para verificar os dados retornados
-        const noticiaEncontrada = response.data[id]; // Pega a notícia com base no ID
-        console.log(noticiaEncontrada); // Verifique o conteúdo da notícia
-        setNoticia(noticiaEncontrada);
+        console.log("Respostas das notícias:", response.data); // Verificando a resposta
+        setNoticias(response.data); // Armazena todas as notícias
       } catch (error) {
-        console.error("Erro ao buscar a notícia:", error);
+        console.error("Erro ao buscar as notícias:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchNoticia();
-  }, [id]);
+    fetchNoticias();
+  }, []);
+
+  // Verifique se o id corresponde ao índice de uma notícia existente
+  useEffect(() => {
+    if (noticias.length > 0 && id !== undefined) {
+      const noticiaEncontrada = noticias[id]; // Acessa a notícia com base no id
+      console.log("Notícia encontrada:", noticiaEncontrada); // Verificando a notícia encontrada
+      setNoticia(noticiaEncontrada);
+    }
+  }, [id, noticias]);
 
   if (loading) {
     return (
@@ -59,7 +67,7 @@ export default function Noticia({ modoNoturno }) {
               Voltar
             </Link>
           </header>
-          
+
           <div className="flex-1 p-6 text-white flex flex-col justify-between">
             <h1 className="text-4xl font-bold mb-4">{noticia.title}</h1>
             <p className="text-lg mb-4">{new Date(noticia.pubDate).toLocaleDateString()}</p>
