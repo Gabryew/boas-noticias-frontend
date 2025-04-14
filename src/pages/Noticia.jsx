@@ -9,8 +9,24 @@ export default function Noticia() {
   const [speechInstance, setSpeechInstance] = useState(null); // Para guardar a instância do SpeechSynthesisUtterance
   const [currentTime, setCurrentTime] = useState(0); // Para controlar o progresso
   const [duration, setDuration] = useState(0); // Para a duração total da leitura
+  const [scrollProgress, setScrollProgress] = useState(0); // Barra de progresso de rolagem
+  const [relatedNews, setRelatedNews] = useState([]);
   const { link } = useParams();
   const navigate = useNavigate();
+
+  // Função para calcular o tempo de leitura
+  const calcularTempoLeitura = (texto) => {
+    const palavras = texto.split(/\s+/).length;
+    const tempo = Math.ceil(palavras / 200); // Aproximadamente 200 palavras por minuto
+    return tempo;
+  };
+
+  // Função para formatar o tempo no formato MM:SS
+  const formatarTempo = (segundos) => {
+    const minutos = Math.floor(segundos / 60);
+    const segundosRestantes = segundos % 60;
+    return `${minutos < 10 ? "0" : ""}${minutos}:${segundosRestantes < 10 ? "0" : ""}${segundosRestantes}`;
+  };
 
   // Função para ouvir o texto
   const ouvirTexto = () => {
@@ -28,7 +44,7 @@ export default function Noticia() {
 
       // Atualiza a duração da leitura quando o texto começar a ser lido
       utterance.onstart = () => {
-        setDuration(texto.split(/\s+/).length / 200); // Estimativa do tempo de leitura
+        setDuration(calcularTempoLeitura(texto)); // Estima o tempo de leitura
         setIsPlaying(true);
       };
 
@@ -65,6 +81,32 @@ export default function Noticia() {
     }
   };
 
+  // Função para atualizar a barra de progresso de rolagem
+  const handleScroll = () => {
+    const scrollTop = window.scrollY;
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrolled = (scrollTop / scrollHeight) * 100;
+    setScrollProgress(scrolled);
+  };
+
+  // Função para buscar as notícias relacionadas
+  const fetchRelatedNews = (noticiaId) => {
+    axios
+      .get("https://boas-noticias-frontend.vercel.app/api/boas-noticias")
+      .then((response) => {
+        const related = response.data.filter((n) => n.link !== noticiaId);
+        setRelatedNews(related.slice(0, 3)); // Pega 3 notícias relacionadas
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar notícias relacionadas:", error);
+      });
+  };
+
+  // Função para ir para a home
+  const goHome = () => {
+    navigate("/");
+  };
+
   useEffect(() => {
     async function fetchNoticia() {
       try {
@@ -75,6 +117,7 @@ export default function Noticia() {
 
         if (noticiaEncontrada) {
           setNoticia(noticiaEncontrada);
+          fetchRelatedNews(noticiaEncontrada.link); // Buscar notícias relacionadas
         } else {
           navigate("/"); // Redireciona para a home se a notícia não for encontrada
         }
@@ -87,6 +130,13 @@ export default function Noticia() {
 
     fetchNoticia();
   }, [link, navigate]);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -106,6 +156,17 @@ export default function Noticia() {
 
   return (
     <div className="bg-black text-white min-h-screen">
+      {/* Barra de Progresso de Rolagem */}
+      <div className="h-1 bg-blue-600" style={{ width: `${scrollProgress}%` }}></div>
+
+      {/* Botão Voltar para a Home */}
+      <button
+        onClick={goHome}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl m-4"
+      >
+        Voltar para a Home
+      </button>
+
       {/* Imagem principal */}
       <div
         className="h-64 md:h-96 bg-cover bg-center"
@@ -125,12 +186,11 @@ export default function Noticia() {
             {noticia.author && <span>Por {noticia.author}</span>}
             {noticia.source && <span>Fonte: {noticia.source}</span>}
           </div>
-        </div>
 
-        <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
-          {noticia.summary
-            .split("\n")
-            .map((par, i) => <p key={i}>{par.trim()}</p>)}
+          {/* Tempo de leitura */}
+          <div className="text-sm text-gray-400 mt-2">
+            Tempo estimado de leitura: {calcularTempoLeitura(noticia.summary)} min
+          </div>
         </div>
 
         {/* Player de áudio */}
@@ -142,6 +202,9 @@ export default function Noticia() {
             {isPlaying ? "Pausar" : "Reproduzir"}
           </button>
 
+          {/* Tempo no formato MM:SS */}
+          <span>{formatarTempo(currentTime)}</span>
+
           {/* Linha do tempo */}
           <input
             type="range"
@@ -151,7 +214,56 @@ export default function Noticia() {
             onChange={handleTimeChange}
             className="w-full"
           />
-          <span>{Math.round(currentTime)} / {Math.round(duration)}</span>
+        </div>
+
+        {/* Resumo da notícia */}
+        <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
+          {noticia.summary
+            .split("\n")
+            .map((par, i) => <p key={i}>{par.trim()}</p>)}
+        </div>
+
+        <a
+          href={noticia.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition"
+        >
+          Ler no site original
+        </a>
+
+        {/* Botão de Compartilhar */}
+        <button
+          onClick={() => {
+            if (navigator.share) {
+              navigator
+                .share({
+                  title: noticia.title,
+                  text: noticia.summary,
+                  url: noticia.link,
+                })
+                .then(() => console.log("Notícia compartilhada com sucesso!"))
+                .catch((error) => console.error("Erro ao compartilhar a notícia:", error));
+            } else {
+              alert("Compartilhamento não suportado neste navegador.");
+            }
+          }}
+          className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold mt-4 transition"
+        >
+          Compartilhar
+        </button>
+
+        {/* Outras Notícias */}
+        <div className="mt-8 space-y-4">
+          <h2 className="text-xl font-semibold">Outras Notícias</h2>
+          {relatedNews.map((news) => (
+            <div key={news.link} className="bg-gray-800 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold">{news.title}</h3>
+              <a href={`/noticia/${news.link}`} className="text-blue-500">
+                Ver mais
+              </a>
+            </div>
+          ))}
         </div>
       </div>
     </div>
