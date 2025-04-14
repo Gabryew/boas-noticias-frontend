@@ -15,6 +15,7 @@
     "axios": "^1.8.4",
     "compromise": "^13.0.0",
     "framer-motion": "^12.6.5",
+    "lucide-react": "^0.488.0",
     "postcss": "^8.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
