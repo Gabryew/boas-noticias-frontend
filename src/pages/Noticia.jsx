@@ -13,13 +13,13 @@ export default function Noticia() {
       try {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         const noticiaEncontrada = response.data.find(
-          (n) => encodeURIComponent(n.link) === link
+          (n) => n.link === decodeURIComponent(link) // Decodifica o link da URL antes de comparar
         );
 
         if (noticiaEncontrada) {
           setNoticia(noticiaEncontrada);
         } else {
-          navigate("/");
+          navigate("/"); // Redireciona caso não encontre a notícia
         }
       } catch (error) {
         console.error("Erro ao buscar a notícia:", error);
