@@ -15,17 +15,28 @@ function calcularTempoLeitura(texto) {
 export default function Home() {
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1); // Controle de página
+  const [hasMore, setHasMore] = useState(true); // Verifica se há mais notícias
   const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchNoticias() {
       try {
-        const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
+        setLoading(true);
+        const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias", {
+          params: { page } // Envia a página para a API
+        });
+        
+        if (response.data.length === 0) {
+          setHasMore(false); // Se não houver mais notícias, desabilita o infinite scroll
+        }
+        
         const noticiasComTempo = response.data.map((noticia) => ({
           ...noticia,
-          readingTime: calcularTempoLeitura(noticia.content), // Garantir que o campo 'content' exista
+          readingTime: calcularTempoLeitura(noticia.content || noticia.summary), // Calculando o tempo de leitura
         }));
-        setNoticias(noticiasComTempo);
+        
+        setNoticias((prevNoticias) => [...prevNoticias, ...noticiasComTempo]); // Adiciona as novas notícias à lista
       } catch (error) {
         console.error("Erro ao buscar notícias:", error);
       } finally {
@@ -34,9 +45,16 @@ export default function Home() {
     }
 
     fetchNoticias();
-  }, []);
+  }, [page]); // Carregar mais notícias sempre que a página mudar
 
-  if (loading) {
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    if (scrollHeight - scrollTop <= clientHeight + 100 && hasMore && !loading) {
+      setPage((prevPage) => prevPage + 1); // Carregar mais notícias
+    }
+  };
+
+  if (loading && page === 1) {
     return (
       <div className="flex items-center justify-center h-screen bg-black">
         <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
@@ -45,7 +63,10 @@ export default function Home() {
   }
 
   return (
-    <div className="w-screen h-screen overflow-y-scroll snap-y snap-mandatory bg-black text-white">
+    <div
+      className="w-screen h-screen overflow-y-scroll snap-y snap-mandatory bg-black text-white"
+      onScroll={handleScroll}
+    >
       {noticias.map((noticia, index) => (
         <motion.div
           key={index}
@@ -77,6 +98,11 @@ export default function Home() {
           </div>
         </motion.div>
       ))}
+      {loading && page > 1 && (
+        <div className="flex items-center justify-center py-4 bg-black">
+          <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
+        </div>
+      )}
     </div>
   );
 }
