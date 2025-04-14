@@ -5,7 +5,7 @@ import axios from "axios";
 export default function Noticia() {
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { link } = useParams();
+  const { link } = useParams(); // Obtém o link da URL
   const navigate = useNavigate();
   const [scrollProgress, setScrollProgress] = useState(0);
 
@@ -34,6 +34,8 @@ export default function Noticia() {
     async function fetchNoticia() {
       try {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
+
+        // Converte o link da URL para o mesmo formato que está no feed
         const noticiaEncontrada = response.data.find(
           (n) => encodeURIComponent(n.link) === link
         );
@@ -41,7 +43,8 @@ export default function Noticia() {
         if (noticiaEncontrada) {
           setNoticia(noticiaEncontrada);
         } else {
-          navigate("/");  // Redireciona para a home caso não encontre a notícia
+          // Redireciona para a home se não encontrar a notícia
+          navigate("/");
         }
       } catch (error) {
         console.error("Erro ao buscar a notícia:", error);
