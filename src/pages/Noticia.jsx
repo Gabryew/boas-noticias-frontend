@@ -13,6 +13,7 @@ export default function Noticia() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef(null);
+  const utteranceRef = useRef(null);
   const { link } = useParams();
   const navigate = useNavigate();
 
@@ -62,23 +63,27 @@ export default function Noticia() {
   };
 
   const toggleAudio = () => {
-    const audio = audioRef.current;
-    if (audio) {
-      if (ouvir) {
-        audio.pause();
-      } else {
-        audio.play();
-      }
-      setOuvir(!ouvir);
+    if (ouvir) {
+      window.speechSynthesis.cancel();
+      setOuvir(false);
+    } else {
+      const utterance = new SpeechSynthesisUtterance(noticia.summary);
+      utterance.lang = "pt-BR";
+      utterance.onend = () => setOuvir(false);
+      utteranceRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+      setOuvir(true);
     }
   };
 
   useEffect(() => {
     const atualizarBarra = () => {
-      const scrollTop = window.scrollY;
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const scrollPercent = (scrollTop / docHeight) * 100;
-      setProgresso(scrollPercent);
+      requestAnimationFrame(() => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollPercent = (scrollTop / docHeight) * 100;
+        setProgresso(scrollPercent);
+      });
     };
 
     window.addEventListener("scroll", atualizarBarra);
@@ -139,34 +144,13 @@ export default function Noticia() {
 
         {/* Player de áudio */}
         <div className="bg-white/10 p-4 rounded-xl flex flex-col gap-2">
-          <audio
-            ref={audioRef}
-            onTimeUpdate={() => setCurrentTime(audioRef.current.currentTime)}
-            onLoadedMetadata={() => setDuration(audioRef.current.duration)}
-            onEnded={() => setOuvir(false)}
+          <button
+            onClick={toggleAudio}
+            className="p-2 bg-white text-black rounded-full hover:scale-110 transition"
           >
-            <source src={`data:audio/wav;base64,${btoa(noticia.summary)}`} />
-          </audio>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={toggleAudio}
-              className="p-2 bg-white text-black rounded-full hover:scale-110 transition"
-            >
-              {ouvir ? <Pause size={20} /> : <Play size={20} />}
-            </button>
-            <div className="flex-1">
-              <div className="w-full bg-white/20 h-2 rounded-full">
-                <div
-                  className="bg-green-500 h-2 rounded-full"
-                  style={{ width: `${(currentTime / duration) * 100 || 0}%` }}
-                />
-              </div>
-              <div className="text-xs text-gray-300 mt-1 text-right">
-                {formatarTempo(currentTime)} / {formatarTempo(duration)}
-              </div>
-            </div>
-          </div>
+            {ouvir ? <Pause size={20} /> : <Play size={20} />}
+          </button>
+          <span className="text-sm text-gray-300">{ouvir ? "Ouvindo notícia..." : "Ouvir notícia"}</span>
         </div>
 
         {/* Texto da notícia */}
@@ -203,24 +187,26 @@ export default function Noticia() {
         </div>
 
         {/* Outras notícias */}
-        <div className="mt-12 space-y-6">
-          <h2 className="text-2xl font-bold">Outras notícias</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {noticia.outros?.map((outra, i) => (
-              <div
-                key={i}
-                onClick={() => navigate(`/noticia/${encodeURIComponent(outra.link)}`)}
-                className="cursor-pointer group"
-              >
+        {noticia.outros?.length > 0 && (
+          <div className="mt-12 space-y-6">
+            <h2 className="text-2xl font-bold">Outras notícias</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {noticia.outros.map((outra, i) => (
                 <div
-                  className="h-40 bg-cover bg-center rounded-xl mb-2"
-                  style={{ backgroundImage: `url(${outra.image || "default-image.jpg"})` }}
-                />
-                <p className="group-hover:underline">{outra.title}</p>
-              </div>
-            ))}
+                  key={i}
+                  onClick={() => navigate(`/noticia/${encodeURIComponent(outra.link)}`)}
+                  className="cursor-pointer group"
+                >
+                  <div
+                    className="h-40 bg-cover bg-center rounded-xl mb-2"
+                    style={{ backgroundImage: `url(${outra.image || "default-image.jpg"})` }}
+                  />
+                  <p className="group-hover:underline">{outra.title}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
