@@ -104,7 +104,7 @@ export default function Noticia() {
           style={{ width: `${progresso}%` }}
           initial={{ width: 0 }}
           animate={{ width: `${progresso}%` }}
-          transition={{ ease: "linear" }}
+          transition={{ ease: "linear", duration: 0.2 }}
         />
       </div>
 
