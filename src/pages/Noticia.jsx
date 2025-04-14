@@ -41,7 +41,7 @@ export default function Noticia() {
         if (noticiaEncontrada) {
           setNoticia(noticiaEncontrada);
         } else {
-          navigate("/");
+          navigate("/");  // Redireciona para a home caso não encontre a notícia
         }
       } catch (error) {
         console.error("Erro ao buscar a notícia:", error);
