@@ -106,7 +106,7 @@ export default function Noticia() {
           backgroundImage: `url(${noticia.image || "default-image.jpg"})`,
         }}
       />
-
+      
       {/* Conteúdo da notícia */}
       <div className="max-w-3xl mx-auto p-6 space-y-6">
         <div className="space-y-1">
@@ -156,7 +156,7 @@ export default function Noticia() {
         </div>
 
         {/* Outras notícias */}
-        {noticia.outros?.length > 0 && (
+        {noticia.outros && noticia.outros.length > 0 && (
           <div className="mt-12 space-y-6">
             <h2 className="text-2xl font-bold">Outras notícias</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
