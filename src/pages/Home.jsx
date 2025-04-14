@@ -25,8 +25,8 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-black text-white text-xl">
-        Carregando notícias...
+      <div className="flex items-center justify-center h-screen bg-black">
+        <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
       </div>
     );
   }
