@@ -8,9 +8,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchNoticias() {
       try {
-        const response = await axios.get(
-          "https://boas-noticias-frontend.vercel.app/api/boas-noticias"
-        );
+        const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         setNoticias(response.data);
       } catch (error) {
         console.error("Erro ao buscar notícias:", error);
@@ -44,10 +42,10 @@ export default function Home() {
           }}
         >
           <div className="bg-black/60 p-6 backdrop-blur-sm w-full">
-            <h1 className="text-2xl font-bold mb-2">{noticia.titulo}</h1>
+            <h1 className="text-2xl font-bold mb-2">{noticia.title}</h1>
             <p className="text-sm">
               {noticia.autor} ({noticia.veiculo}) •{" "}
-              {new Date(noticia.data).toLocaleDateString()}
+              {new Date(noticia.pubDate).toLocaleDateString()}
             </p>
           </div>
         </div>

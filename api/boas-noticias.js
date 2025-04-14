@@ -37,7 +37,6 @@ function cleanText(text) {
 // Extrai a imagem do item RSS, se houver
 function extractImage(item) {
   if (item.enclosure?.url) return item.enclosure.url;
-
   if (item["media:content"]?.url) return item["media:content"].url;
 
   if (item["content:encoded"]) {
