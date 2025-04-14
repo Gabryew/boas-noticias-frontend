@@ -13,13 +13,13 @@ export default function Noticia() {
       try {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         const noticiaEncontrada = response.data.find(
-          (n) => n.link === decodeURIComponent(link) // Decodifica o link da URL antes de comparar
+          (n) => encodeURIComponent(n.link) === link
         );
 
         if (noticiaEncontrada) {
           setNoticia(noticiaEncontrada);
         } else {
-          navigate("/"); // Redireciona caso não encontre a notícia
+          navigate("/");
         }
       } catch (error) {
         console.error("Erro ao buscar a notícia:", error);
@@ -30,6 +30,21 @@ export default function Noticia() {
 
     fetchNoticia();
   }, [link, navigate]);
+
+  const compartilharNoticia = () => {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: noticia.title,
+          text: noticia.summary,
+          url: noticia.link,
+        })
+        .then(() => console.log("Notícia compartilhada com sucesso!"))
+        .catch((error) => console.error("Erro ao compartilhar a notícia:", error));
+    } else {
+      alert("Compartilhamento não suportado neste navegador.");
+    }
+  };
 
   if (loading) {
     return (
@@ -84,6 +99,14 @@ export default function Noticia() {
         >
           Ler no site original
         </a>
+
+        {/* Botão de compartilhamento */}
+        <button
+          onClick={compartilharNoticia}
+          className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold mt-4 transition"
+        >
+          Compartilhar
+        </button>
       </div>
     </div>
   );
