@@ -2,30 +2,28 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
+import { Play, Pause } from "lucide-react";
 
 export default function Noticia() {
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [relatedNews, setRelatedNews] = useState([]);
+  const [ouvir, setOuvir] = useState(false);
+  const [tempoLeitura, setTempoLeitura] = useState(0);
+  const [progresso, setProgresso] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const audioRef = useRef(null);
   const { link } = useParams();
   const navigate = useNavigate();
-
-  const [audio, setAudio] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const audioRef = useRef(null);
 
   useEffect(() => {
     async function fetchNoticia() {
       try {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         const noticiaEncontrada = response.data.find((n) => n.link === link);
-
         if (noticiaEncontrada) {
           setNoticia(noticiaEncontrada);
-          const outras = response.data.filter((n) => n.link !== link).slice(0, 3);
-          setRelatedNews(outras);
+          calcularTempoLeitura(noticiaEncontrada.summary);
         } else {
           navigate("/");
         }
@@ -39,68 +37,53 @@ export default function Noticia() {
     fetchNoticia();
   }, [link, navigate]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      const docHeight = document.body.scrollHeight - window.innerHeight;
-      const scrolled = (scrollTop / docHeight) * 100;
-      setProgress(scrolled);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    if (noticia) {
-      const utterance = new SpeechSynthesisUtterance(noticia.summary);
-      utterance.lang = "pt-BR";
-      const newAudio = new Audio();
-      window.speechSynthesis.cancel();
-      setAudio(utterance);
-    }
-  }, [noticia]);
-
-  const playAudio = () => {
-    const synth = window.speechSynthesis;
-    synth.speak(audio);
-    setIsPlaying(true);
-  };
-
-  const pauseAudio = () => {
-    window.speechSynthesis.pause();
-    setIsPlaying(false);
-  };
-
   const calcularTempoLeitura = (texto) => {
-    const palavras = texto.split(" ").length;
+    const palavras = texto.split(/\s+/).length;
     const minutos = Math.ceil(palavras / 200);
-    return minutos;
+    setTempoLeitura(minutos);
   };
 
   const compartilharNoticia = () => {
     if (navigator.share) {
-      navigator
-        .share({
-          title: noticia.title,
-          text: noticia.summary,
-          url: noticia.link,
-        })
-        .then(() => console.log("Notícia compartilhada com sucesso!"))
-        .catch((error) => console.error("Erro ao compartilhar a notícia:", error));
+      navigator.share({
+        title: noticia.title,
+        text: noticia.summary,
+        url: noticia.link,
+      });
     } else {
       alert("Compartilhamento não suportado neste navegador.");
     }
   };
 
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60)
-      .toString()
-      .padStart(2, "0");
-    const s = Math.floor(seconds % 60)
-      .toString()
-      .padStart(2, "0");
-    return `${m}:${s}`;
+  const formatarTempo = (segundos) => {
+    const min = String(Math.floor(segundos / 60)).padStart(2, "0");
+    const sec = String(Math.floor(segundos % 60)).padStart(2, "0");
+    return `${min}:${sec}`;
   };
+
+  const toggleAudio = () => {
+    const audio = audioRef.current;
+    if (audio) {
+      if (ouvir) {
+        audio.pause();
+      } else {
+        audio.play();
+      }
+      setOuvir(!ouvir);
+    }
+  };
+
+  useEffect(() => {
+    const atualizarBarra = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      setProgresso(scrollPercent);
+    };
+
+    window.addEventListener("scroll", atualizarBarra);
+    return () => window.removeEventListener("scroll", atualizarBarra);
+  }, []);
 
   if (loading) {
     return (
@@ -120,22 +103,27 @@ export default function Noticia() {
 
   return (
     <div className="bg-black text-white min-h-screen">
-      <div
-        className="fixed top-0 left-0 h-1 bg-blue-500 z-50"
-        style={{ width: `${progress}%` }}
-      />
+      {/* Barra de progresso de leitura */}
+      <div className="fixed top-0 left-0 w-full h-1 bg-white z-50">
+        <motion.div
+          className="h-full bg-blue-500 origin-left"
+          style={{ width: `${progresso}%` }}
+          initial={{ width: 0 }}
+          animate={{ width: `${progresso}%` }}
+          transition={{ ease: "linear" }}
+        />
+      </div>
 
+      {/* Imagem principal */}
       <div
         className="h-64 md:h-96 bg-cover bg-center"
-        style={{ backgroundImage: `url(${noticia.image || "default-image.jpg"})` }}
+        style={{
+          backgroundImage: `url(${noticia.image || "default-image.jpg"})`,
+        }}
       />
 
-      <motion.div
-        className="max-w-3xl mx-auto p-6 space-y-6"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      {/* Conteúdo da notícia */}
+      <div className="max-w-3xl mx-auto p-6 space-y-6">
         <div className="space-y-1">
           <h1 className="text-3xl md:text-4xl font-bold leading-tight">
             {noticia.title}
@@ -145,33 +133,58 @@ export default function Noticia() {
             {noticia.author && <span>Por {noticia.author}</span>}
             {noticia.source && <span>Fonte: {noticia.source}</span>}
           </div>
-          <div className="text-sm text-gray-300 mt-2">⏱️ Tempo de leitura: {calcularTempoLeitura(noticia.summary)} mins</div>
+        </div>
 
-          {/* Player de Áudio */}
-          <div className="mt-4 flex items-center gap-4">
+        <p className="text-sm text-gray-300">⏱️ Tempo de leitura: {tempoLeitura} mins</p>
+
+        {/* Player de áudio */}
+        <div className="bg-white/10 p-4 rounded-xl flex flex-col gap-2">
+          <audio
+            ref={audioRef}
+            onTimeUpdate={() => setCurrentTime(audioRef.current.currentTime)}
+            onLoadedMetadata={() => setDuration(audioRef.current.duration)}
+            onEnded={() => setOuvir(false)}
+          >
+            <source src={`data:audio/wav;base64,${btoa(noticia.summary)}`} />
+          </audio>
+
+          <div className="flex items-center gap-4">
             <button
-              onClick={isPlaying ? pauseAudio : playAudio}
-              className="bg-white text-black px-4 py-2 rounded-xl"
+              onClick={toggleAudio}
+              className="p-2 bg-white text-black rounded-full hover:scale-110 transition"
             >
-              {isPlaying ? "⏸️ Pausar" : "▶️ Ouvir a Notícia"}
+              {ouvir ? <Pause size={20} /> : <Play size={20} />}
             </button>
-            <span className="text-sm text-gray-300">{formatTime(currentTime)}</span>
+            <div className="flex-1">
+              <div className="w-full bg-white/20 h-2 rounded-full">
+                <div
+                  className="bg-green-500 h-2 rounded-full"
+                  style={{ width: `${(currentTime / duration) * 100 || 0}%` }}
+                />
+              </div>
+              <div className="text-xs text-gray-300 mt-1 text-right">
+                {formatarTempo(currentTime)} / {formatarTempo(duration)}
+              </div>
+            </div>
           </div>
         </div>
 
-        <motion.div
-          className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          {noticia.summary.split("\n").map((par, i) => (
-            <p key={i}>{par.trim()}</p>
-          ))}
-        </motion.div>
+        {/* Texto da notícia */}
+        <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
+          {noticia.summary
+            .split("\n")
+            .map((par, i) => <p key={i}>{par.trim()}</p>)}
+        </div>
 
-        {/* Ações */}
-        <div className="flex flex-col md:flex-row gap-4 mt-6">
+        {/* Botões de ação */}
+        <div className="flex flex-col md:flex-row gap-4 pt-4 border-t border-white/10 mt-6">
+          <button
+            onClick={() => navigate("/")}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto"
+          >
+            Voltar
+          </button>
+
           <a
             href={noticia.link}
             target="_blank"
@@ -180,39 +193,35 @@ export default function Noticia() {
           >
             Ler no site original
           </a>
+
           <button
             onClick={compartilharNoticia}
             className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto"
           >
             Compartilhar
           </button>
-          <button
-            onClick={() => navigate("/")}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto"
-          >
-            Voltar para a Home
-          </button>
         </div>
 
-        {/* Outras Notícias */}
-        <div className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4">Outras Notícias</h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            {relatedNews.map((n, idx) => (
+        {/* Outras notícias */}
+        <div className="mt-12 space-y-6">
+          <h2 className="text-2xl font-bold">Outras notícias</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {noticia.outros?.map((outra, i) => (
               <div
-                key={idx}
-                className="cursor-pointer bg-gray-900 p-4 rounded-xl hover:bg-gray-800 transition"
-                onClick={() => navigate(`/noticia/${n.link}`)}
+                key={i}
+                onClick={() => navigate(`/noticia/${encodeURIComponent(outra.link)}`)}
+                className="cursor-pointer group"
               >
-                {n.image && (
-                  <img src={n.image} alt="thumb" className="w-full h-40 object-cover rounded mb-3" />
-                )}
-                <h3 className="text-lg font-semibold leading-snug">{n.title}</h3>
+                <div
+                  className="h-40 bg-cover bg-center rounded-xl mb-2"
+                  style={{ backgroundImage: `url(${outra.image || "default-image.jpg"})` }}
+                />
+                <p className="group-hover:underline">{outra.title}</p>
               </div>
             ))}
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
