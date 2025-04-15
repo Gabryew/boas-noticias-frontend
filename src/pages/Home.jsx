@@ -86,10 +86,11 @@ export default function Home() {
         return (
           <motion.div
             key={index}
-            className="w-screen h-screen snap-start relative flex items-end justify-center"
+            className="w-screen h-screen snap-start relative flex items-end justify-center cursor-pointer"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: index * 0.1 }}
+            onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
             style={{
               backgroundImage: noticia.image ? `url(${noticia.image})` : undefined,
               backgroundSize: "cover",
@@ -120,10 +121,7 @@ export default function Home() {
             </div>
 
             {/* Conteúdo da notícia */}
-            <div
-              className="relative z-10 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm cursor-pointer"
-              onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
-            >
+            <div className="relative z-10 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm">
               <h1 className="text-3xl md:text-4xl font-extrabold leading-tight drop-shadow-lg">
                 {noticia.title}
               </h1>
