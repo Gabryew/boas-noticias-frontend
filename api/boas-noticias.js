@@ -9,12 +9,10 @@ const RSS_FEEDS = [
   "https://www.cnnbrasil.com.br/rss/",
 ];
 
-// Função para limpar e preparar o texto
 function cleanText(text) {
   return text.replace(/[^\w\s]/g, "").toLowerCase();
 }
 
-// Função aprimorada para extrair imagem de diversos campos
 function extractImage(item) {
   const possibleFields = [
     item.enclosure?.url,
@@ -36,14 +34,13 @@ function extractImage(item) {
   return null;
 }
 
-// Extrai o nome do veículo a partir do link da notícia
 function extractSourceFromLink(link) {
   try {
     const url = new URL(link);
     const hostname = url.hostname.replace("www.", "");
     const parts = hostname.split(".");
     if (parts.length > 1) {
-      return parts[0].toUpperCase(); // Ex: g1.globo.com → G1
+      return parts[0].toUpperCase();
     }
     return hostname.toUpperCase();
   } catch (e) {
@@ -51,7 +48,6 @@ function extractSourceFromLink(link) {
   }
 }
 
-// Classifica a notícia com base em palavras-chave
 function classifyNews(noticia) {
   const text = cleanText(`${noticia.title} ${noticia.contentSnippet || ""}`);
   let score = 0;
@@ -86,7 +82,6 @@ function classifyNews(noticia) {
   return { classification, image };
 }
 
-// Função principal da API
 export default async (req, res) => {
   try {
     const todasNoticias = [];
@@ -98,8 +93,6 @@ export default async (req, res) => {
         const { classification, image } = classifyNews(item);
         const source = extractSourceFromLink(item.link);
         const author = item.creator || item.author || null;
-
-        console.log(`[DEBUG] ${item.title} => imagem: ${image}`);
 
         return {
           title: item.title,

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import Filtros from "./Filtros"; // Certifique-se de que o caminho está correto
 
 function calcularTempoLeitura(texto) {
   if (!texto) return null;
@@ -99,7 +100,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Renderizar o componente de filtros se a rota for /filtros */}
       {location.pathname === "/filtros" ? (
         <Filtros onFilterChange={handleFilterChange} />
       ) : (
