@@ -75,7 +75,7 @@ const Noticia = () => {
       <h1 className="text-3xl font-bold mb-2">{noticia.title}</h1>
       <p className="text-sm text-gray-500 mb-1">{noticia.date} - {noticia.author} ({noticia.source})</p>
 
-      <p className="text-sm text-gray-600 mb-4 flex items-center gap-1">
+      <p className="text-sm text-gray-600 flex items-center gap-1 mb-2">
         <i className="bi bi-stopwatch"></i> Tempo de leitura: {readingTime} min
       </p>
 
