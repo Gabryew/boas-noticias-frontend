@@ -1,5 +1,6 @@
 import Parser from "rss-parser";
-import { db } from "./firebaseAdmin.js";
+import { db } from "./firebaseAdmin.js"; // Certifique-se de que seu db está configurado corretamente
+import { doc, getDoc, setDoc } from "firebase/firestore"; // Importando as funções necessárias do Firebase
 
 const parser = new Parser();
 
@@ -48,13 +49,14 @@ function extractSourceFromLink(link) {
 }
 
 async function loadKeywords() {
-  const docRef = doc(db, "keywords", "keywords");  // Referência do documento
+  const docRef = doc(db, "keywords", "keywords");  // Referência ao documento de palavras-chave
   const docSnap = await getDoc(docRef);  // Obtendo o documento
 
   if (docSnap.exists()) {
     return docSnap.data();  // Se o documento existir, retorna os dados
   }
 
+  // Se o documento não existir, cria as palavras-chave iniciais
   const initialKeywords = {
     positiveKeywords: [
       "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
@@ -75,7 +77,6 @@ async function loadKeywords() {
   await setDoc(docRef, initialKeywords);  // Salva as palavras iniciais
   return initialKeywords;
 }
-
 
 async function saveKeywords(keywords) {
   const docRef = doc(db, "keywords", "keywords");
