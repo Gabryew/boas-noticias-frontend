@@ -1,10 +1,20 @@
 import Parser from "rss-parser";
-import { promises as fs } from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBcL7CHAHxeEzcc7yvUYRNAt5Vh1CFKrfI",
+  authDomain: "boas-noticias-83127.firebaseapp.com",
+  projectId: "boas-noticias-83127",
+  storageBucket: "boas-noticias-83127.firebasestorage.app",
+  messagingSenderId: "960134017492",
+  appId: "1:960134017492:web:28bc3e6760eec05d26a641",
+  measurementId: "G-F5ZJDJSD41"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const parser = new Parser();
 
@@ -17,14 +27,50 @@ const RSS_FEEDS = [
 ];
 
 async function loadKeywords() {
-  const filePath = path.join(__dirname, 'keywords.json');
-  const data = await fs.readFile(filePath, 'utf8');
-  return JSON.parse(data);
+  const docRef = doc(db, "keywords", "keywords");
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    return docSnap.data();
+  } else {
+    // Se o documento não existir, crie um documento inicial
+    await setDoc(docRef, {
+      positiveKeywords: [
+        "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
+        "conquista", "inovação", "superação", "melhoria", "comunidade", "ajuda", "preservação",
+        "vacinado", "campanha", "educação", "recuperação", "aliança", "progresso", "acolhimento",
+        "inclusão", "emprego", "renovação", "acordo", "projeto social", "salvamento", "renascimento",
+        "ajuda humanitária", "medicação", "apoio", "expansão"
+      ],
+      negativeKeywords: [
+        "tragédia", "morte", "assassinato", "crime", "violência", "desastre", "incêndio", "fogo",
+        "desabamento", "acidente", "explosão", "tragicamente", "colapso", "guerra", "conflito",
+        "corrupção", "fraude", "crise", "falência", "dano", "assalto", "ferido", "infecção",
+        "envenenamento", "atentado", "caos", "inundação", "desespero", "lockdown", "pandemia",
+        "falta de", "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
+      ]
+    });
+    return {
+      positiveKeywords: [
+        "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
+        "conquista", "inovação", "superação", "melhoria", "comunidade", "ajuda", "preservação",
+        "vacinado", "campanha", "educação", "recuperação", "aliança", "progresso", "acolhimento",
+        "inclusão", "emprego", "renovação", "acordo", "projeto social", "salvamento", "renascimento",
+        "ajuda humanitária", "medicação", "apoio", "expansão"
+      ],
+      negativeKeywords: [
+        "tragédia", "morte", "assassinato", "crime", "violência", "desastre", "incêndio", "fogo",
+        "desabamento", "acidente", "explosão", "tragicamente", "colapso", "guerra", "conflito",
+        "corrupção", "fraude", "crise", "falência", "dano", "assalto", "ferido", "infecção",
+        "envenenamento", "atentado", "caos", "inundação", "desespero", "lockdown", "pandemia",
+        "falta de", "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
+      ]
+    };
+  }
 }
 
 async function saveKeywords(keywords) {
-  const filePath = path.join(__dirname, 'keywords.json');
-  await fs.writeFile(filePath, JSON.stringify(keywords, null, 2));
+  const docRef = doc(db, "keywords", "keywords");
+  await setDoc(docRef, keywords);
 }
 
 function cleanText(text) {
