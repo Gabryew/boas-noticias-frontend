@@ -27,7 +27,7 @@ export default function Home() {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         const noticiasComTempo = response.data.map((noticia) => ({
           ...noticia,
-          readingTime: calcularTempoLeitura(noticia.content),
+          readingTime: calcularTempoLeitura(noticia.summary), // Use 'summary' instead of 'content'
         }));
         setNoticias(noticiasComTempo);
       } catch (error) {
