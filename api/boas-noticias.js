@@ -74,7 +74,7 @@ async function loadKeywords() {
     ]
   };
 
-  await setDoc(docRef, initialKeywords);  // Salva as palavras iniciais
+  await setDoc(docRef, initialKeywords);  // Salva as palavras iniciais no Firestore
   return initialKeywords;
 }
 
