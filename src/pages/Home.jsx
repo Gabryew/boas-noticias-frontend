@@ -18,6 +18,8 @@ export default function Home() {
     const local = localStorage.getItem("noticiasSalvas");
     return local ? JSON.parse(local) : [];
   });
+  const [selectedSources, setSelectedSources] = useState([]);
+  const [selectedClassification, setSelectedClassification] = useState("all");
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -52,6 +54,12 @@ export default function Home() {
     localStorage.setItem("noticiasSalvas", JSON.stringify(atualizadas));
   };
 
+  const filteredNoticias = noticias.filter((noticia) => {
+    const sourceMatch = selectedSources.length === 0 || selectedSources.includes(noticia.source);
+    const classificationMatch = selectedClassification === "all" || noticia.classification === selectedClassification;
+    return sourceMatch && classificationMatch;
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-black">
@@ -77,10 +85,96 @@ export default function Home() {
           >
             Notícias Salvas
           </Link>
+          <div className="relative">
+            <button
+              className="hover:underline text-gray-400"
+              onClick={() => {
+                // Lógica para abrir/fechar o menu de filtros
+              }}
+            >
+              Filtros
+            </button>
+            <div className="absolute left-0 mt-2 bg-white text-black p-4 rounded shadow-lg hidden">
+              {/* Menu de filtros */}
+              <div>
+                <h3 className="font-semibold">Fontes</h3>
+                <div>
+                  {/* Lista de fontes com checkboxes */}
+                  {Array.from(new Set(noticias.map(n => n.source))).map(source => (
+                    <label key={source} className="inline-flex items-center mr-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedSources.includes(source)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedSources([...selectedSources, source]);
+                          } else {
+                            setSelectedSources(selectedSources.filter(s => s !== source));
+                          }
+                        }}
+                        className="mr-1"
+                      />
+                      {source}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h3 className="font-semibold mt-4">Classificação</h3>
+                <div>
+                  {/* Opções de classificação */}
+                  <label className="inline-flex items-center mr-2">
+                    <input
+                      type="radio"
+                      name="classification"
+                      value="all"
+                      checked={selectedClassification === "all"}
+                      onChange={() => setSelectedClassification("all")}
+                      className="mr-1"
+                    />
+                    Todas
+                  </label>
+                  <label className="inline-flex items-center mr-2">
+                    <input
+                      type="radio"
+                      name="classification"
+                      value="good"
+                      checked={selectedClassification === "good"}
+                      onChange={() => setSelectedClassification("good")}
+                      className="mr-1"
+                    />
+                    Boas
+                  </label>
+                  <label className="inline-flex items-center mr-2">
+                    <input
+                      type="radio"
+                      name="classification"
+                      value="neutral"
+                      checked={selectedClassification === "neutral"}
+                      onChange={() => setSelectedClassification("neutral")}
+                      className="mr-1"
+                    />
+                    Neutras
+                  </label>
+                  <label className="inline-flex items-center mr-2">
+                    <input
+                      type="radio"
+                      name="classification"
+                      value="bad"
+                      checked={selectedClassification === "bad"}
+                      onChange={() => setSelectedClassification("bad")}
+                      className="mr-1"
+                    />
+                    Ruins
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {noticias.map((noticia, index) => {
+      {filteredNoticias.map((noticia, index) => {
         const salva = salvas.find((n) => n.link === noticia.link);
 
         return (
