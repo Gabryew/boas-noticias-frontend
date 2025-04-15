@@ -32,6 +32,7 @@ export default function Noticia() {
             .slice(0, 3);
           setOutrasNoticias(outras);
 
+          // Verifica se a notícia já foi salva
           const noticiasSalvas = JSON.parse(localStorage.getItem("noticiasSalvas")) || [];
           if (noticiasSalvas.some((n) => n.link === noticiaEncontrada.link)) {
             setNoticiaSalva(true);
@@ -139,30 +140,6 @@ export default function Noticia() {
         </div>
       </div>
 
-      {/* Área do botão de compartilhar e salvar */}
-      <div className="max-w-3xl mx-auto p-6 space-y-6 flex justify-between items-center">
-        <div className="flex items-center gap-6">
-          {/* Botão de Compartilhar */}
-          <button
-            onClick={compartilharNoticia}
-            className="bg-transparent hover:bg-gray-700 text-white px-4 py-2 rounded-lg border-2 border-gray-500 font-semibold transition"
-          >
-            Compartilhar
-          </button>
-
-          {/* Botão de Salvar/Remover notícia */}
-          <button
-            onClick={noticiaSalva ? removerNoticia : salvarNoticia}
-            className={`text-4xl cursor-pointer ${noticiaSalva ? "text-red-500" : "text-gray-500"}`}
-          >
-            ❤️
-          </button>
-        </div>
-
-        <p className="text-sm text-gray-300">⏱️ Tempo de leitura: {tempoLeitura} mins</p>
-      </div>
-
-      {/* Imagem da notícia */}
       <div
         className="h-64 md:h-96 bg-cover bg-center"
         style={{
@@ -172,13 +149,54 @@ export default function Noticia() {
 
       <div className="max-w-3xl mx-auto p-6 space-y-6">
         <div className="space-y-1">
-          <h1 className="text-3xl md:text-4xl font-bold leading-tight">{noticia.title}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold leading-tight">
+            {noticia.title}
+          </h1>
           <div className="text-sm text-gray-400 flex gap-4 flex-wrap">
             <span>{new Date(noticia.pubDate).toLocaleDateString()}</span>
             {noticia.author && <span>Por {noticia.author}</span>}
             {noticia.source && <span>Fonte: {noticia.source}</span>}
           </div>
         </div>
+
+        {/* Botões de Compartilhar e Salvar */}
+        <div className="flex gap-4 pt-4">
+          <button
+            onClick={compartilharNoticia}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              fill="currentColor"
+              className="bi bi-share"
+              viewBox="0 0 16 16"
+            >
+              <path d="M8 12a.5.5 0 0 1 .5-.5h4.5v-9H8a.5.5 0 0 1-.5-.5V2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v10a.5.5 0 0 1-.5.5H8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h5V3H8a.5.5 0 0 1-.5-.5V2z" />
+            </svg>
+            Compartilhar
+          </button>
+
+          <button
+            onClick={noticiaSalva ? removerNoticia : salvarNoticia}
+            className={`bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2`}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              fill="currentColor"
+              className="bi bi-heart"
+              viewBox="0 0 16 16"
+            >
+              <path d="M8 12s3-3.37 5-5c1.5-1.5 2-2.5 2-3.5C15 2 13 1 11 1c-1 0-2 1-3 3C7 3 6 2 5 1 3 1 1 2 1 3.5c0 1 .5 2 2 3.5C5 8.63 8 12 8 12z" />
+            </svg>
+            {noticiaSalva ? "Remover" : "Salvar"}
+          </button>
+        </div>
+
+        <p className="text-sm text-gray-300">⏱️ Tempo de leitura: {tempoLeitura} mins</p>
 
         <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
           {noticia.summary
@@ -205,7 +223,6 @@ export default function Noticia() {
         </div>
       </div>
 
-      {/* Outras notícias */}
       {outrasNoticias.length > 0 && (
         <div className="max-w-6xl mx-auto p-6 mt-12 space-y-6">
           <h2 className="text-2xl font-bold">Outras notícias para você</h2>
