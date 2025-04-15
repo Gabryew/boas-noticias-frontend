@@ -34,6 +34,7 @@ export default function Home() {
           ...noticia,
           readingTime: calcularTempoLeitura(noticia.summary),
         }));
+        console.log("Notícias carregadas:", noticiasComTempo); // Log para depuração
         setNoticias(noticiasComTempo);
       } catch (error) {
         console.error("Erro ao buscar notícias:", error);
@@ -70,6 +71,8 @@ export default function Home() {
     if (noticia.classification === "bad" && filter.bad) return true;
     return false;
   });
+
+  console.log("Notícias filtradas:", filteredNoticias); // Log para depuração
 
   if (loading) {
     return (
@@ -128,59 +131,65 @@ export default function Home() {
         </div>
       </div>
 
-      {filteredNoticias.map((noticia, index) => {
-        const salva = salvas.find((n) => n.link === noticia.link);
+      {filteredNoticias.length === 0 ? (
+        <div className="flex items-center justify-center h-screen text-white">
+          Nenhuma notícia encontrada.
+        </div>
+      ) : (
+        filteredNoticias.map((noticia, index) => {
+          const salva = salvas.find((n) => n.link === noticia.link);
 
-        return (
-          <motion.div
-            key={index}
-            className="w-screen h-screen snap-start relative flex items-end justify-center cursor-pointer"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: index * 0.1 }}
-            onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
-            style={{
-              backgroundImage: noticia.image ? `url(${noticia.image})` : undefined,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-              backgroundColor: noticia.image ? "transparent" : "#111",
-            }}
-          >
-            {/* Gradiente de fundo */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-0" />
+          return (
+            <motion.div
+              key={index}
+              className="w-screen h-screen snap-start relative flex items-end justify-center cursor-pointer"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: index * 0.1 }}
+              onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
+              style={{
+                backgroundImage: noticia.image ? `url(${noticia.image})` : undefined,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                backgroundColor: noticia.image ? "transparent" : "#111",
+              }}
+            >
+              {/* Gradiente de fundo */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-0" />
 
-            {/* Ícone de salvar */}
-            <div className="absolute top-20 right-4 z-20">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleSalvarNoticia(noticia);
-                }}
-                aria-label={salva ? "Remover dos favoritos" : "Salvar nos favoritos"}
-                className="text-white text-4xl hover:scale-110 transition-transform drop-shadow-lg"
-              >
-                {salva ? (
-                  <i className="bi bi-bookmark-heart-fill text-red-500"></i>
-                ) : (
-                  <i className="bi bi-bookmark-heart"></i>
-                )}
-              </button>
-            </div>
-
-            {/* Conteúdo da notícia */}
-            <div className="relative z-10 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm">
-              <h1 className="text-3xl md:text-4xl font-extrabold leading-tight drop-shadow-lg">
-                {noticia.title}
-              </h1>
-              <div className="text-sm text-gray-300 flex flex-col gap-1 font-light">
-                {noticia.source && <span>{noticia.source}</span>}
-                {noticia.readingTime && <span>Tempo de leitura: {noticia.readingTime}</span>}
+              {/* Ícone de salvar */}
+              <div className="absolute top-20 right-4 z-20">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSalvarNoticia(noticia);
+                  }}
+                  aria-label={salva ? "Remover dos favoritos" : "Salvar nos favoritos"}
+                  className="text-white text-4xl hover:scale-110 transition-transform drop-shadow-lg"
+                >
+                  {salva ? (
+                    <i className="bi bi-bookmark-heart-fill text-red-500"></i>
+                  ) : (
+                    <i className="bi bi-bookmark-heart"></i>
+                  )}
+                </button>
               </div>
-            </div>
-          </motion.div>
-        );
-      })}
+
+              {/* Conteúdo da notícia */}
+              <div className="relative z-10 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm">
+                <h1 className="text-3xl md:text-4xl font-extrabold leading-tight drop-shadow-lg">
+                  {noticia.title}
+                </h1>
+                <div className="text-sm text-gray-300 flex flex-col gap-1 font-light">
+                  {noticia.source && <span>{noticia.source}</span>}
+                  {noticia.readingTime && <span>Tempo de leitura: {noticia.readingTime}</span>}
+                </div>
+              </div>
+            </motion.div>
+          );
+        })
+      )}
     </div>
   );
 }
