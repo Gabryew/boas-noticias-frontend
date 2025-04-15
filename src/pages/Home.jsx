@@ -18,6 +18,11 @@ export default function Home() {
     const local = localStorage.getItem("noticiasSalvas");
     return local ? JSON.parse(local) : [];
   });
+  const [filter, setFilter] = useState({
+    good: true,
+    neutral: true,
+    bad: true,
+  });
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -27,7 +32,7 @@ export default function Home() {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         const noticiasComTempo = response.data.map((noticia) => ({
           ...noticia,
-          readingTime: calcularTempoLeitura(noticia.summary), // Use 'summary' instead of 'content'
+          readingTime: calcularTempoLeitura(noticia.summary),
         }));
         setNoticias(noticiasComTempo);
       } catch (error) {
@@ -51,6 +56,20 @@ export default function Home() {
     setSalvas(atualizadas);
     localStorage.setItem("noticiasSalvas", JSON.stringify(atualizadas));
   };
+
+  const handleFilterChange = (type) => {
+    setFilter((prevFilter) => ({
+      ...prevFilter,
+      [type]: !prevFilter[type],
+    }));
+  };
+
+  const filteredNoticias = noticias.filter((noticia) => {
+    if (noticia.classification === "good" && filter.good) return true;
+    if (noticia.classification === "neutral" && filter.neutral) return true;
+    if (noticia.classification === "bad" && filter.bad) return true;
+    return false;
+  });
 
   if (loading) {
     return (
@@ -78,9 +97,38 @@ export default function Home() {
             Notícias Salvas
           </Link>
         </div>
+        <div className="flex gap-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={filter.good}
+              onChange={() => handleFilterChange("good")}
+              className="mr-2"
+            />
+            Boas Notícias
+          </label>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={filter.neutral}
+              onChange={() => handleFilterChange("neutral")}
+              className="mr-2"
+            />
+            Notícias Neutras
+          </label>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={filter.bad}
+              onChange={() => handleFilterChange("bad")}
+              className="mr-2"
+            />
+            Notícias Ruins
+          </label>
+        </div>
       </div>
 
-      {noticias.map((noticia, index) => {
+      {filteredNoticias.map((noticia, index) => {
         const salva = salvas.find((n) => n.link === noticia.link);
 
         return (

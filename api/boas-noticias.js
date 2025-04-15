@@ -1,5 +1,6 @@
 import Parser from "rss-parser";
 const parser = new Parser();
+const fs = require('fs');
 
 const RSS_FEEDS = [
   "https://g1.globo.com/rss/g1/",
@@ -8,6 +9,15 @@ const RSS_FEEDS = [
   "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
   "https://www.cnnbrasil.com.br/rss/",
 ];
+
+function loadKeywords() {
+  const data = fs.readFileSync('keywords.json', 'utf8');
+  return JSON.parse(data);
+}
+
+function saveKeywords(keywords) {
+  fs.writeFileSync('keywords.json', JSON.stringify(keywords, null, 2));
+}
 
 function cleanText(text) {
   return text.replace(/[^\w\s]/g, "").toLowerCase();
@@ -48,36 +58,39 @@ function extractSourceFromLink(link) {
   }
 }
 
+function updateKeywords(noticia, classification) {
+  const keywords = loadKeywords();
+  const text = cleanText(`${noticia.title} ${noticia.contentSnippet || ""}`);
+  const words = text.split(/\s+/);
+
+  words.forEach(word => {
+    if (classification === 'good' && !keywords.positiveKeywords.includes(word)) {
+      keywords.positiveKeywords.push(word);
+    } else if (classification === 'bad' && !keywords.negativeKeywords.includes(word)) {
+      keywords.negativeKeywords.push(word);
+    }
+  });
+
+  saveKeywords(keywords);
+}
+
 function classifyNews(noticia) {
+  const keywords = loadKeywords();
   const text = cleanText(`${noticia.title} ${noticia.contentSnippet || ""}`);
   let score = 0;
 
-  const positiveKeywords = [
-    "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
-    "conquista", "inovação", "superação", "melhoria", "comunidade", "ajuda", "preservação",
-    "vacinado", "campanha", "educação", "recuperação", "aliança", "progresso", "acolhimento",
-    "inclusão", "emprego", "renovação", "acordo", "projeto social", "salvamento", "renascimento",
-    "ajuda humanitária", "medicação", "apoio", "expansão"
-  ];
-
-  const negativeKeywords = [
-    "tragédia", "morte", "assassinato", "crime", "violência", "desastre", "incêndio", "fogo",
-    "desabamento", "acidente", "explosão", "tragicamente", "colapso", "guerra", "conflito",
-    "corrupção", "fraude", "crise", "falência", "dano", "assalto", "ferido", "infecção",
-    "envenenamento", "atentado", "caos", "inundação", "desespero", "lockdown", "pandemia",
-    "falta de", "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
-  ];
-
-  positiveKeywords.forEach(word => {
+  keywords.positiveKeywords.forEach(word => {
     if (text.includes(word)) score += 1;
   });
 
-  negativeKeywords.forEach(word => {
+  keywords.negativeKeywords.forEach(word => {
     if (text.includes(word)) score -= 1;
   });
 
   const classification = score > 1 ? "good" : score < -1 ? "bad" : "neutral";
   const image = extractImage(noticia);
+
+  updateKeywords(noticia, classification); // Atualiza as palavras-chave
 
   return { classification, image };
 }
