@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 
 export default function NoticiasSalvas() {
   const [salvas, setSalvas] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation(); // Importando o hook useLocation para pegar o pathname atual.
 
   useEffect(() => {
     const noticiasSalvas = JSON.parse(localStorage.getItem("noticiasSalvas")) || [];
@@ -48,7 +49,7 @@ export default function NoticiasSalvas() {
           >
             <div
               className="h-40 bg-cover bg-center rounded-xl mb-2"
-              style={{ backgroundImage: `url(${noticia.image})` }}
+              style={{ backgroundImage: `url(${noticia.image || "default-image.jpg"})` }} // Definindo um fallback de imagem
             />
             <h2 className="text-xl font-semibold">{noticia.title}</h2>
             <div className="text-sm text-gray-300">
