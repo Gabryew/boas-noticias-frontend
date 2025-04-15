@@ -1,6 +1,7 @@
 import Parser from "rss-parser";
+import { promises as fs } from 'fs';
+
 const parser = new Parser();
-const fs = require('fs');
 
 const RSS_FEEDS = [
   "https://g1.globo.com/rss/g1/",
@@ -10,13 +11,13 @@ const RSS_FEEDS = [
   "https://www.cnnbrasil.com.br/rss/",
 ];
 
-function loadKeywords() {
-  const data = fs.readFileSync('keywords.json', 'utf8');
+async function loadKeywords() {
+  const data = await fs.readFile('keywords.json', 'utf8');
   return JSON.parse(data);
 }
 
-function saveKeywords(keywords) {
-  fs.writeFileSync('keywords.json', JSON.stringify(keywords, null, 2));
+async function saveKeywords(keywords) {
+  await fs.writeFile('keywords.json', JSON.stringify(keywords, null, 2));
 }
 
 function cleanText(text) {
@@ -58,8 +59,8 @@ function extractSourceFromLink(link) {
   }
 }
 
-function updateKeywords(noticia, classification) {
-  const keywords = loadKeywords();
+async function updateKeywords(noticia, classification) {
+  const keywords = await loadKeywords();
   const text = cleanText(`${noticia.title} ${noticia.contentSnippet || ""}`);
   const words = text.split(/\s+/);
 
@@ -71,11 +72,11 @@ function updateKeywords(noticia, classification) {
     }
   });
 
-  saveKeywords(keywords);
+  await saveKeywords(keywords);
 }
 
-function classifyNews(noticia) {
-  const keywords = loadKeywords();
+async function classifyNews(noticia) {
+  const keywords = await loadKeywords();
   const text = cleanText(`${noticia.title} ${noticia.contentSnippet || ""}`);
   let score = 0;
 
@@ -90,7 +91,7 @@ function classifyNews(noticia) {
   const classification = score > 1 ? "good" : score < -1 ? "bad" : "neutral";
   const image = extractImage(noticia);
 
-  updateKeywords(noticia, classification); // Atualiza as palavras-chave
+  await updateKeywords(noticia, classification); // Atualiza as palavras-chave
 
   return { classification, image };
 }
@@ -102,8 +103,8 @@ export default async (req, res) => {
     for (const url of RSS_FEEDS) {
       const feed = await parser.parseURL(url);
 
-      const noticiasClassificadas = feed.items.map(item => {
-        const { classification, image } = classifyNews(item);
+      const noticiasClassificadas = await Promise.all(feed.items.map(async (item) => {
+        const { classification, image } = await classifyNews(item);
         const source = extractSourceFromLink(item.link);
         const author = item.creator || item.author || null;
 
@@ -117,7 +118,7 @@ export default async (req, res) => {
           author,
           source,
         };
-      });
+      }));
 
       todasNoticias.push(...noticiasClassificadas);
     }
