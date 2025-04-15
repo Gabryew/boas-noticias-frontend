@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
 
@@ -9,6 +9,7 @@ export default function Noticia() {
   const [loading, setLoading] = useState(true);
   const [tempoLeitura, setTempoLeitura] = useState(0);
   const [progresso, setProgresso] = useState(0);
+  const [noticiaSalva, setNoticiaSalva] = useState(false);
   const { link } = useParams();
   const navigate = useNavigate();
 
@@ -31,6 +32,12 @@ export default function Noticia() {
             .sort(() => 0.5 - Math.random())
             .slice(0, 3);
           setOutrasNoticias(outras);
+
+          // Verifica se a notícia já foi salva
+          const noticiasSalvas = JSON.parse(localStorage.getItem("noticiasSalvas")) || [];
+          if (noticiasSalvas.some((n) => n.link === noticiaEncontrada.link)) {
+            setNoticiaSalva(true);
+          }
         } else {
           navigate("/");
         }
@@ -60,6 +67,22 @@ export default function Noticia() {
     } else {
       alert("Compartilhamento não suportado neste navegador.");
     }
+  };
+
+  const salvarNoticia = () => {
+    const noticiasSalvas = JSON.parse(localStorage.getItem("noticiasSalvas")) || [];
+    if (!noticiasSalvas.some((n) => n.link === noticia.link)) {
+      noticiasSalvas.push(noticia);
+      localStorage.setItem("noticiasSalvas", JSON.stringify(noticiasSalvas));
+      setNoticiaSalva(true);
+    }
+  };
+
+  const removerNoticia = () => {
+    const noticiasSalvas = JSON.parse(localStorage.getItem("noticiasSalvas")) || [];
+    const novasNoticias = noticiasSalvas.filter((n) => n.link !== noticia.link);
+    localStorage.setItem("noticiasSalvas", JSON.stringify(novasNoticias));
+    setNoticiaSalva(false);
   };
 
   const formatarTempo = (segundos) => {
@@ -100,14 +123,30 @@ export default function Noticia() {
 
   return (
     <div className="bg-black text-white min-h-screen">
-      <div className="fixed top-0 left-0 w-full h-1 bg-white z-50">
-        <motion.div
-          className="h-full bg-blue-500 origin-left"
-          style={{ width: `${progresso}%` }}
-          initial={{ width: 0 }}
-          animate={{ width: `${progresso}%` }}
-          transition={{ ease: "linear", duration: 0.2 }}
-        />
+      {/* Menu superior */}
+      <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
+        <div className="flex gap-4 text-sm font-semibold">
+          <Link
+            to="/"
+            className={`hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
+          >
+            Últimas Notícias
+          </Link>
+          <Link
+            to="/noticias-salvas"
+            className={`hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
+          >
+            Notícias Salvas
+          </Link>
+        </div>
+      </div>
+
+      {/* Coração para salvar a notícia */}
+      <div
+        className={`absolute top-16 right-4 text-red-500 text-4xl cursor-pointer ${noticiaSalva ? "animate-pulse" : ""}`}
+        onClick={noticiaSalva ? removerNoticia : salvarNoticia}
+      >
+        ❤️
       </div>
 
       <div
