@@ -102,20 +102,19 @@ export default function Home() {
             {/* Gradiente de fundo */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-0" />
 
-            {/* Botão de salvar flutuante */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleSalvarNoticia(noticia);
-              }}
-              className="absolute bottom-6 right-6 z-20 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-lg border border-white/20 hover:bg-white/20 transition-colors"
-            >
-              {salva ? (
-                <FaHeart className="text-red-500 text-lg transition-all" />
-              ) : (
-                <FaRegHeart className="text-white text-lg transition-all" />
-              )}
-            </button>
+            {/* Ícone de salvar */}
+            <div className="absolute top-20 right-4 z-20">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleSalvarNoticia(noticia);
+                }}
+                aria-label={salva ? "Remover dos favoritos" : "Salvar nos favoritos"}
+                className="text-white text-3xl animate-pulse hover:scale-110 transition-transform drop-shadow-lg"
+              >
+                {salva ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
+              </button>
+            </div>
 
             {/* Conteúdo da notícia */}
             <div
