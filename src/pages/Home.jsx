@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import Filtros from "./Filtros"; // Certifique-se de que o caminho está correto
 
 function calcularTempoLeitura(texto) {
   if (!texto) return null;
@@ -19,8 +18,6 @@ export default function Home() {
     const local = localStorage.getItem("noticiasSalvas");
     return local ? JSON.parse(local) : [];
   });
-  const [selectedSources, setSelectedSources] = useState([]);
-  const [selectedClassifications, setSelectedClassifications] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -55,17 +52,6 @@ export default function Home() {
     localStorage.setItem("noticiasSalvas", JSON.stringify(atualizadas));
   };
 
-  const handleFilterChange = (sources, classifications) => {
-    setSelectedSources(sources);
-    setSelectedClassifications(classifications);
-  };
-
-  const filteredNoticias = noticias.filter((noticia) => {
-    const sourceMatch = selectedSources.length === 0 || selectedSources.includes(noticia.source);
-    const classificationMatch = selectedClassifications.length === 0 || selectedClassifications.includes(noticia.classification);
-    return sourceMatch && classificationMatch;
-  });
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-black">
@@ -91,74 +77,64 @@ export default function Home() {
           >
             Notícias Salvas
           </Link>
-          <Link
-            to="/filtros"
-            className="hover:underline text-gray-400"
-          >
-            Filtros
-          </Link>
         </div>
       </div>
 
-      {location.pathname === "/filtros" ? (
-        <Filtros onFilterChange={handleFilterChange} />
-      ) : (
-        filteredNoticias.map((noticia, index) => {
-          const salva = salvas.find((n) => n.link === noticia.link);
+      {noticias.map((noticia, index) => {
+        const salva = salvas.find((n) => n.link === noticia.link);
 
-          return (
-            <motion.div
-              key={index}
-              className="w-screen h-screen snap-start relative flex items-end justify-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: index * 0.1 }}
-              style={{
-                backgroundImage: noticia.image ? `url(${noticia.image})` : undefined,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
-                backgroundColor: noticia.image ? "transparent" : "#111",
-              }}
-            >
-              {/* Gradiente de fundo */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-0" />
+        return (
+          <motion.div
+            key={index}
+            className="w-screen h-screen snap-start relative flex items-end justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: index * 0.1 }}
+            style={{
+              backgroundImage: noticia.image ? `url(${noticia.image})` : undefined,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              backgroundColor: noticia.image ? "transparent" : "#111",
+            }}
+          >
+            {/* Gradiente de fundo */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-0" />
 
-              {/* Ícone de salvar */}
-              <div className="absolute top-20 right-4 z-20">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleSalvarNoticia(noticia);
-                  }}
-                  aria-label={salva ? "Remover dos favoritos" : "Salvar nos favoritos"}
-                  className="text-white text-4xl hover:scale-110 transition-transform drop-shadow-lg"
-                >
-                  {salva ? (
-                    <i className="bi bi-bookmark-heart-fill text-red-500"></i>
-                  ) : (
-                    <i className="bi bi-bookmark-heart"></i>
-                  )}
-                </button>
-              </div>
-
-              {/* Conteúdo da notícia */}
-              <div
-                className="relative z-10 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm cursor-pointer"
-                onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
+            {/* Ícone de salvar */}
+            <div className="absolute top-20 right-4 z-20">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleSalvarNoticia(noticia);
+                }}
+                aria-label={salva ? "Remover dos favoritos" : "Salvar nos favoritos"}
+                className="text-white text-4xl hover:scale-110 transition-transform drop-shadow-lg"
               >
-                <h1 className="text-3xl md:text-4xl font-extrabold leading-tight drop-shadow-lg">
-                  {noticia.title}
-                </h1>
-                <div className="text-sm text-gray-300 flex flex-col gap-1 font-light">
-                  {noticia.source && <span>{noticia.source}</span>}
-                  {noticia.readingTime && <span>Tempo de leitura: {noticia.readingTime}</span>}
-                </div>
+                {salva ? (
+                  <i className="bi bi-bookmark-heart-fill text-red-500"></i>
+                ) : (
+                  <i className="bi bi-bookmark-heart"></i>
+                )}
+              </button>
+            </div>
+
+            {/* Conteúdo da notícia */}
+            <div
+              className="relative z-10 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm cursor-pointer"
+              onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
+            >
+              <h1 className="text-3xl md:text-4xl font-extrabold leading-tight drop-shadow-lg">
+                {noticia.title}
+              </h1>
+              <div className="text-sm text-gray-300 flex flex-col gap-1 font-light">
+                {noticia.source && <span>{noticia.source}</span>}
+                {noticia.readingTime && <span>Tempo de leitura: {noticia.readingTime}</span>}
               </div>
-            </motion.div>
-          );
-        })
-      )}
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
