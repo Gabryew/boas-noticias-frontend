@@ -109,7 +109,7 @@ export default function Home() {
                   toggleSalvarNoticia(noticia);
                 }}
                 aria-label={salva ? "Remover dos favoritos" : "Salvar nos favoritos"}
-                className="text-white text-4xl animate-pulse hover:scale-110 transition-transform drop-shadow-lg"
+                className="text-white text-4xl hover:scale-110 transition-transform drop-shadow-lg"
               >
                 {salva ? (
                   <i className="bi bi-bookmark-heart-fill text-red-500"></i>
