@@ -66,8 +66,18 @@ export default function Home() {
       {/* Menu superior */}
       <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
         <div className="flex gap-4 text-sm font-semibold">
-          <Link to="/" className={`hover:underline ${location.pathname === '/' ? 'text-white' : 'text-gray-400'}`}>Últimas Notícias</Link>
-          <Link to="/noticias-salvas" className={`hover:underline ${location.pathname === '/noticias-salvas' ? 'text-white' : 'text-gray-400'}`}>Notícias Salvas</Link>
+          <Link
+            to="/"
+            className={`hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
+          >
+            Últimas Notícias
+          </Link>
+          <Link
+            to="/noticias-salvas"
+            className={`hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
+          >
+            Notícias Salvas
+          </Link>
         </div>
       </div>
 
@@ -82,10 +92,11 @@ export default function Home() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: index * 0.1 }}
             style={{
-              backgroundImage: `url(${noticia.image})`,
+              backgroundImage: noticia.image ? `url(${noticia.image})` : undefined,
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
+              backgroundColor: noticia.image ? "transparent" : "#111",
             }}
           >
             {/* Gradiente de fundo */}
@@ -93,13 +104,16 @@ export default function Home() {
 
             {/* Ícone de salvar */}
             <button
-              onClick={() => toggleSalvarNoticia(noticia)}
-              className="absolute top-4 right-4 z-20 text-white text-xl drop-shadow-lg"
+              onClick={(e) => {
+                e.stopPropagation(); // impede navegação ao clicar no coração
+                toggleSalvarNoticia(noticia);
+              }}
+              className="absolute top-4 right-4 z-20 text-white text-xl drop-shadow-lg hover:scale-110 transition-transform"
             >
               {salva ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
             </button>
 
-            {/* Conteúdo */}
+            {/* Conteúdo da notícia */}
             <div
               className="relative z-10 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm cursor-pointer"
               onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
@@ -118,6 +132,3 @@ export default function Home() {
     </div>
   );
 }
-git add .
-git commit -m "att"
-git push
