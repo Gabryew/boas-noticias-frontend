@@ -16,6 +16,7 @@
     "bootstrap-icons": "^1.11.3",
     "compromise": "^13.0.0",
     "firebase": "^11.6.0",
+    "firebase-admin": "^13.2.0",
     "framer-motion": "^12.6.5",
     "lucide-react": "^0.488.0",
     "postcss": "^8.5.3",
