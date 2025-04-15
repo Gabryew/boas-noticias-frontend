@@ -1,20 +1,6 @@
 import Parser from "rss-parser";
-import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
-
-// Configuração do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyBcL7CHAHxeEzcc7yvUYRNAt5Vh1CFKrfI",
-  authDomain: "boas-noticias-83127.firebaseapp.com",
-  projectId: "boas-noticias-83127",
-  storageBucket: "boas-noticias-83127.firebasestorage.app",
-  messagingSenderId: "960134017492",
-  appId: "1:960134017492:web:28bc3e6760eec05d26a641",
-  measurementId: "G-F5ZJDJSD41"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import { db } from "../../lib/firebaseAdmin"; // 👈 ajuste o caminho se necessário
+import { doc, getDoc, setDoc } from "firebase-admin/firestore";
 
 const parser = new Parser();
 
@@ -33,24 +19,7 @@ async function loadKeywords() {
     if (docSnap.exists()) {
       return docSnap.data();
     } else {
-      // Se o documento não existir, crie um documento inicial
-      await setDoc(docRef, {
-        positiveKeywords: [
-          "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
-          "conquista", "inovação", "superação", "melhoria", "comunidade", "ajuda", "preservação",
-          "vacinado", "campanha", "educação", "recuperação", "aliança", "progresso", "acolhimento",
-          "inclusão", "emprego", "renovação", "acordo", "projeto social", "salvamento", "renascimento",
-          "ajuda humanitária", "medicação", "apoio", "expansão"
-        ],
-        negativeKeywords: [
-          "tragédia", "morte", "assassinato", "crime", "violência", "desastre", "incêndio", "fogo",
-          "desabamento", "acidente", "explosão", "tragicamente", "colapso", "guerra", "conflito",
-          "corrupção", "fraude", "crise", "falência", "dano", "assalto", "ferido", "infecção",
-          "envenenamento", "atentado", "caos", "inundação", "desespero", "lockdown", "pandemia",
-          "falta de", "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
-        ]
-      });
-      return {
+      const initialKeywords = {
         positiveKeywords: [
           "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
           "conquista", "inovação", "superação", "melhoria", "comunidade", "ajuda", "preservação",
@@ -66,6 +35,9 @@ async function loadKeywords() {
           "falta de", "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
         ]
       };
+
+      await setDoc(docRef, initialKeywords);
+      return initialKeywords;
     }
   } catch (error) {
     console.error("Erro ao carregar palavras-chave:", error);
@@ -113,10 +85,7 @@ function extractSourceFromLink(link) {
     const url = new URL(link);
     const hostname = url.hostname.replace("www.", "");
     const parts = hostname.split(".");
-    if (parts.length > 1) {
-      return parts[0].toUpperCase(); // Ex: g1.globo.com → G1
-    }
-    return hostname.toUpperCase();
+    return parts.length > 1 ? parts[0].toUpperCase() : hostname.toUpperCase();
   } catch (e) {
     return null;
   }
@@ -160,7 +129,7 @@ async function classifyNews(noticia) {
     const classification = score > 1 ? "good" : score < -1 ? "bad" : "neutral";
     const image = extractImage(noticia);
 
-    await updateKeywords(noticia, classification); // Atualiza as palavras-chave
+    await updateKeywords(noticia, classification);
 
     return { classification, image };
   } catch (error) {
