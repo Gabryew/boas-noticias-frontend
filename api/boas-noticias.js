@@ -48,11 +48,11 @@ function extractSourceFromLink(link) {
 }
 
 async function loadKeywords() {
-  const docRef = doc(db, "keywords", "keywords");
-  const docSnap = await getDoc(docRef);
+  const docRef = doc(db, "keywords", "keywords");  // Referência do documento
+  const docSnap = await getDoc(docRef);  // Obtendo o documento
 
   if (docSnap.exists()) {
-    return docSnap.data();
+    return docSnap.data();  // Se o documento existir, retorna os dados
   }
 
   const initialKeywords = {
@@ -72,9 +72,10 @@ async function loadKeywords() {
     ]
   };
 
-  await setDoc(docRef, initialKeywords);
+  await setDoc(docRef, initialKeywords);  // Salva as palavras iniciais
   return initialKeywords;
 }
+
 
 async function saveKeywords(keywords) {
   const docRef = doc(db, "keywords", "keywords");
