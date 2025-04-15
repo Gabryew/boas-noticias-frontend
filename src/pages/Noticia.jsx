@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
 
@@ -12,8 +12,8 @@ export default function Noticia() {
   const [noticiaSalva, setNoticiaSalva] = useState(false);
   const { link } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // 👉 Scrolla pro topo quando o link muda (ou seja, nova notícia é carregada)
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [link]);
@@ -33,7 +33,6 @@ export default function Noticia() {
             .slice(0, 3);
           setOutrasNoticias(outras);
 
-          // Verifica se a notícia já foi salva
           const noticiasSalvas = JSON.parse(localStorage.getItem("noticiasSalvas")) || [];
           if (noticiasSalvas.some((n) => n.link === noticiaEncontrada.link)) {
             setNoticiaSalva(true);
@@ -123,7 +122,6 @@ export default function Noticia() {
 
   return (
     <div className="bg-black text-white min-h-screen">
-      {/* Menu superior */}
       <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
         <div className="flex gap-4 text-sm font-semibold">
           <Link
@@ -141,7 +139,6 @@ export default function Noticia() {
         </div>
       </div>
 
-      {/* Capa da Notícia */}
       <div
         className="h-64 md:h-96 bg-cover bg-center"
         style={{
@@ -159,7 +156,6 @@ export default function Noticia() {
           </div>
         </div>
 
-        {/* Tempo de leitura */}
         <p className="text-sm text-gray-300">⏱️ Tempo de leitura: {tempoLeitura} mins</p>
 
         <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
@@ -168,7 +164,6 @@ export default function Noticia() {
             .map((par, i) => <p key={i}>{par.trim()}</p>)}
         </div>
 
-        {/* Botões: compartilhar e salvar */}
         <div className="flex flex-col md:flex-row gap-4 pt-4 border-t border-white/10 mt-6">
           <button
             onClick={compartilharNoticia}
@@ -186,7 +181,6 @@ export default function Noticia() {
           </button>
         </div>
 
-        {/* Navegação para outros links */}
         <div className="flex flex-col md:flex-row gap-4 pt-4 border-t border-white/10 mt-6">
           <button
             onClick={() => navigate("/")}
@@ -206,7 +200,6 @@ export default function Noticia() {
         </div>
       </div>
 
-      {/* Outras notícias */}
       {outrasNoticias.length > 0 && (
         <div className="max-w-6xl mx-auto p-6 mt-12 space-y-6">
           <h2 className="text-2xl font-bold">Outras notícias para você</h2>
@@ -230,6 +223,3 @@ export default function Noticia() {
     </div>
   );
 }
-git add .
-git commit -m "att"
-git push
