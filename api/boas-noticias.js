@@ -38,11 +38,19 @@ function extractSourceFromLink(link) {
   try {
     const url = new URL(link);
     const hostname = url.hostname.replace("www.", "");
-    const parts = hostname.split(".");
-    if (parts.length > 1) {
-      return parts[0].toUpperCase();
-    }
-    return hostname.toUpperCase();
+    const domainParts = hostname.split('.').slice(-2); // Pega as duas últimas partes do domínio
+
+    // Mapeamento manual de domínios conhecidos
+    const knownSources = {
+      "catracalivre.com.br": "CATRACA LIVRE",
+      "g1.globo.com": "G1",
+      "bbc.co.uk": "BBC",
+      "agenciabrasil.ebc.com.br": "AGÊNCIA BRASIL",
+      "cnnbrasil.com.br": "CNN BRASIL",
+    };
+
+    const domainKey = domainParts.join('.');
+    return knownSources[domainKey] || domainParts[0].toUpperCase();
   } catch (e) {
     return null;
   }
