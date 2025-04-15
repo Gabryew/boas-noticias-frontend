@@ -1,5 +1,5 @@
 import Parser from "rss-parser";
-import { db } from "../firebaseAdmin"; // 👈 ajuste o caminho se necessário
+import { db } from "../firebaseAdmin";
 import { doc, getDoc, setDoc } from "firebase-admin/firestore";
 
 const parser = new Parser();
@@ -138,7 +138,16 @@ async function classifyNews(noticia) {
   }
 }
 
-export default async (req, res) => {
+export default async function handler(req, res) {
+  // Configurações CORS
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   try {
     const todasNoticias = [];
 
@@ -178,4 +187,4 @@ export default async (req, res) => {
     console.error("Erro ao buscar notícias:", err);
     res.status(500).json({ error: "Erro ao buscar notícias." });
   }
-};
+}
