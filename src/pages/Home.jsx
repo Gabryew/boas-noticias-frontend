@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import Filtros from "./Filtros"; // Importe o componente de filtros
 
 function calcularTempoLeitura(texto) {
   if (!texto) return null;
@@ -20,7 +19,7 @@ export default function Home() {
     return local ? JSON.parse(local) : [];
   });
   const [selectedSources, setSelectedSources] = useState([]);
-  const [selectedClassification, setSelectedClassification] = useState("all");
+  const [selectedClassifications, setSelectedClassifications] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -55,14 +54,14 @@ export default function Home() {
     localStorage.setItem("noticiasSalvas", JSON.stringify(atualizadas));
   };
 
-  const handleFilterChange = (sources, classification) => {
+  const handleFilterChange = (sources, classifications) => {
     setSelectedSources(sources);
-    setSelectedClassification(classification);
+    setSelectedClassifications(classifications);
   };
 
   const filteredNoticias = noticias.filter((noticia) => {
     const sourceMatch = selectedSources.length === 0 || selectedSources.includes(noticia.source);
-    const classificationMatch = selectedClassification === "all" || noticia.classification === selectedClassification;
+    const classificationMatch = selectedClassifications.length === 0 || selectedClassifications.includes(noticia.classification);
     return sourceMatch && classificationMatch;
   });
 
