@@ -156,13 +156,9 @@ export default function Noticia() {
           </div>
         </div>
 
-        <p className="text-sm text-gray-300">⏱️ Tempo de leitura: {tempoLeitura} mins</p>
-
-        <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
-          {noticia.summary
-            .split("\n")
-            .map((par, i) => <p key={i}>{par.trim()}</p>)}
-        </div>
+        <p className="text-sm text-gray-300">
+          <i className="bi bi-stopwatch"></i> Tempo de leitura: {tempoLeitura} mins
+        </p>
 
         <div className="flex flex-col md:flex-row gap-4 pt-4 border-t border-white/10 mt-6">
           <button
@@ -177,14 +173,20 @@ export default function Noticia() {
             className="bg-transparent hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto flex items-center justify-center gap-2"
           >
             <i className={`bi ${noticiaSalva ? "bi-bookmark-heart-fill" : "bi-bookmark-heart"} text-lg`}></i>
-            {noticiaSalva ? "Notícia salva" : "Salvar"}
+            {noticiaSalva ? "Salvo" : "Salvar"}
           </button>
+        </div>
+
+        <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
+          {noticia.summary
+            .split("\n")
+            .map((par, i) => <p key={i}>{par.trim()}</p>)}
         </div>
 
         <div className="flex flex-col md:flex-row gap-4 pt-4 border-t border-white/10 mt-6">
           <button
             onClick={() => navigate("/")}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto flex items-center justify-center gap-2"
+            className="bg-transparent hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto flex items-center justify-center gap-2"
           >
             <i className="bi bi-arrow-left"></i> Voltar
           </button>
@@ -193,7 +195,7 @@ export default function Noticia() {
             href={noticia.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto text-center flex items-center justify-center gap-2"
+            className="bg-transparent hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto text-center flex items-center justify-center gap-2"
           >
             <i className="bi bi-book"></i> Ler no site original
           </a>
