@@ -1,6 +1,5 @@
 import Parser from "rss-parser";
-import { db } from "./firebaseAdmin";
-import { doc, getDoc, setDoc } from "firebase-admin/firestore";
+import { db } from "./firebaseAdmin.js";
 
 const parser = new Parser();
 
