@@ -1,5 +1,5 @@
 import Parser from "rss-parser";
-import { db } from "../lib/firebaseAdmin"; // 👈 ajuste o caminho se necessário
+import { db } from "./firebaseAdmin"; // 👈 ajuste o caminho se necessário
 import { doc, getDoc, setDoc } from "firebase-admin/firestore";
 
 const parser = new Parser();
