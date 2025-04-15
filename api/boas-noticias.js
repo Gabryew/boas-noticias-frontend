@@ -27,50 +27,60 @@ const RSS_FEEDS = [
 ];
 
 async function loadKeywords() {
-  const docRef = doc(db, "keywords", "keywords");
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    return docSnap.data();
-  } else {
-    // Se o documento não existir, crie um documento inicial
-    await setDoc(docRef, {
-      positiveKeywords: [
-        "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
-        "conquista", "inovação", "superação", "melhoria", "comunidade", "ajuda", "preservação",
-        "vacinado", "campanha", "educação", "recuperação", "aliança", "progresso", "acolhimento",
-        "inclusão", "emprego", "renovação", "acordo", "projeto social", "salvamento", "renascimento",
-        "ajuda humanitária", "medicação", "apoio", "expansão"
-      ],
-      negativeKeywords: [
-        "tragédia", "morte", "assassinato", "crime", "violência", "desastre", "incêndio", "fogo",
-        "desabamento", "acidente", "explosão", "tragicamente", "colapso", "guerra", "conflito",
-        "corrupção", "fraude", "crise", "falência", "dano", "assalto", "ferido", "infecção",
-        "envenenamento", "atentado", "caos", "inundação", "desespero", "lockdown", "pandemia",
-        "falta de", "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
-      ]
-    });
-    return {
-      positiveKeywords: [
-        "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
-        "conquista", "inovação", "superação", "melhoria", "comunidade", "ajuda", "preservação",
-        "vacinado", "campanha", "educação", "recuperação", "aliança", "progresso", "acolhimento",
-        "inclusão", "emprego", "renovação", "acordo", "projeto social", "salvamento", "renascimento",
-        "ajuda humanitária", "medicação", "apoio", "expansão"
-      ],
-      negativeKeywords: [
-        "tragédia", "morte", "assassinato", "crime", "violência", "desastre", "incêndio", "fogo",
-        "desabamento", "acidente", "explosão", "tragicamente", "colapso", "guerra", "conflito",
-        "corrupção", "fraude", "crise", "falência", "dano", "assalto", "ferido", "infecção",
-        "envenenamento", "atentado", "caos", "inundação", "desespero", "lockdown", "pandemia",
-        "falta de", "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
-      ]
-    };
+  try {
+    const docRef = doc(db, "keywords", "keywords");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      // Se o documento não existir, crie um documento inicial
+      await setDoc(docRef, {
+        positiveKeywords: [
+          "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
+          "conquista", "inovação", "superação", "melhoria", "comunidade", "ajuda", "preservação",
+          "vacinado", "campanha", "educação", "recuperação", "aliança", "progresso", "acolhimento",
+          "inclusão", "emprego", "renovação", "acordo", "projeto social", "salvamento", "renascimento",
+          "ajuda humanitária", "medicação", "apoio", "expansão"
+        ],
+        negativeKeywords: [
+          "tragédia", "morte", "assassinato", "crime", "violência", "desastre", "incêndio", "fogo",
+          "desabamento", "acidente", "explosão", "tragicamente", "colapso", "guerra", "conflito",
+          "corrupção", "fraude", "crise", "falência", "dano", "assalto", "ferido", "infecção",
+          "envenenamento", "atentado", "caos", "inundação", "desespero", "lockdown", "pandemia",
+          "falta de", "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
+        ]
+      });
+      return {
+        positiveKeywords: [
+          "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
+          "conquista", "inovação", "superação", "melhoria", "comunidade", "ajuda", "preservação",
+          "vacinado", "campanha", "educação", "recuperação", "aliança", "progresso", "acolhimento",
+          "inclusão", "emprego", "renovação", "acordo", "projeto social", "salvamento", "renascimento",
+          "ajuda humanitária", "medicação", "apoio", "expansão"
+        ],
+        negativeKeywords: [
+          "tragédia", "morte", "assassinato", "crime", "violência", "desastre", "incêndio", "fogo",
+          "desabamento", "acidente", "explosão", "tragicamente", "colapso", "guerra", "conflito",
+          "corrupção", "fraude", "crise", "falência", "dano", "assalto", "ferido", "infecção",
+          "envenenamento", "atentado", "caos", "inundação", "desespero", "lockdown", "pandemia",
+          "falta de", "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
+        ]
+      };
+    }
+  } catch (error) {
+    console.error("Erro ao carregar palavras-chave:", error);
+    throw error;
   }
 }
 
 async function saveKeywords(keywords) {
-  const docRef = doc(db, "keywords", "keywords");
-  await setDoc(docRef, keywords);
+  try {
+    const docRef = doc(db, "keywords", "keywords");
+    await setDoc(docRef, keywords);
+  } catch (error) {
+    console.error("Erro ao salvar palavras-chave:", error);
+    throw error;
+  }
 }
 
 function cleanText(text) {
@@ -113,40 +123,50 @@ function extractSourceFromLink(link) {
 }
 
 async function updateKeywords(noticia, classification) {
-  const keywords = await loadKeywords();
-  const text = cleanText(`${noticia.title} ${noticia.contentSnippet || ""}`);
-  const words = text.split(/\s+/);
+  try {
+    const keywords = await loadKeywords();
+    const text = cleanText(`${noticia.title} ${noticia.contentSnippet || ""}`);
+    const words = text.split(/\s+/);
 
-  words.forEach(word => {
-    if (classification === 'good' && !keywords.positiveKeywords.includes(word)) {
-      keywords.positiveKeywords.push(word);
-    } else if (classification === 'bad' && !keywords.negativeKeywords.includes(word)) {
-      keywords.negativeKeywords.push(word);
-    }
-  });
+    words.forEach(word => {
+      if (classification === 'good' && !keywords.positiveKeywords.includes(word)) {
+        keywords.positiveKeywords.push(word);
+      } else if (classification === 'bad' && !keywords.negativeKeywords.includes(word)) {
+        keywords.negativeKeywords.push(word);
+      }
+    });
 
-  await saveKeywords(keywords);
+    await saveKeywords(keywords);
+  } catch (error) {
+    console.error("Erro ao atualizar palavras-chave:", error);
+    throw error;
+  }
 }
 
 async function classifyNews(noticia) {
-  const keywords = await loadKeywords();
-  const text = cleanText(`${noticia.title} ${noticia.contentSnippet || ""}`);
-  let score = 0;
+  try {
+    const keywords = await loadKeywords();
+    const text = cleanText(`${noticia.title} ${noticia.contentSnippet || ""}`);
+    let score = 0;
 
-  keywords.positiveKeywords.forEach(word => {
-    if (text.includes(word)) score += 1;
-  });
+    keywords.positiveKeywords.forEach(word => {
+      if (text.includes(word)) score += 1;
+    });
 
-  keywords.negativeKeywords.forEach(word => {
-    if (text.includes(word)) score -= 1;
-  });
+    keywords.negativeKeywords.forEach(word => {
+      if (text.includes(word)) score -= 1;
+    });
 
-  const classification = score > 1 ? "good" : score < -1 ? "bad" : "neutral";
-  const image = extractImage(noticia);
+    const classification = score > 1 ? "good" : score < -1 ? "bad" : "neutral";
+    const image = extractImage(noticia);
 
-  await updateKeywords(noticia, classification); // Atualiza as palavras-chave
+    await updateKeywords(noticia, classification); // Atualiza as palavras-chave
 
-  return { classification, image };
+    return { classification, image };
+  } catch (error) {
+    console.error("Erro ao classificar notícia:", error);
+    throw error;
+  }
 }
 
 export default async (req, res) => {
