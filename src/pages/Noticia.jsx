@@ -13,6 +13,7 @@ export default function Noticia() {
   const { link } = useParams();
   const navigate = useNavigate();
 
+  // 👉 Scrolla pro topo quando o link muda (ou seja, nova notícia é carregada)
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [link]);
@@ -140,6 +141,7 @@ export default function Noticia() {
         </div>
       </div>
 
+      {/* Capa da Notícia */}
       <div
         className="h-64 md:h-96 bg-cover bg-center"
         style={{
@@ -149,9 +151,7 @@ export default function Noticia() {
 
       <div className="max-w-3xl mx-auto p-6 space-y-6">
         <div className="space-y-1">
-          <h1 className="text-3xl md:text-4xl font-bold leading-tight">
-            {noticia.title}
-          </h1>
+          <h1 className="text-3xl md:text-4xl font-bold leading-tight">{noticia.title}</h1>
           <div className="text-sm text-gray-400 flex gap-4 flex-wrap">
             <span>{new Date(noticia.pubDate).toLocaleDateString()}</span>
             {noticia.author && <span>Por {noticia.author}</span>}
@@ -159,43 +159,7 @@ export default function Noticia() {
           </div>
         </div>
 
-        {/* Botões de Compartilhar e Salvar */}
-        <div className="flex gap-4 pt-4">
-          <button
-            onClick={compartilharNoticia}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              fill="currentColor"
-              className="bi bi-share"
-              viewBox="0 0 16 16"
-            >
-              <path d="M8 12a.5.5 0 0 1 .5-.5h4.5v-9H8a.5.5 0 0 1-.5-.5V2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v10a.5.5 0 0 1-.5.5H8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h5V3H8a.5.5 0 0 1-.5-.5V2z" />
-            </svg>
-            Compartilhar
-          </button>
-
-          <button
-            onClick={noticiaSalva ? removerNoticia : salvarNoticia}
-            className={`bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold transition flex items-center gap-2`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              fill="currentColor"
-              className="bi bi-heart"
-              viewBox="0 0 16 16"
-            >
-              <path d="M8 12s3-3.37 5-5c1.5-1.5 2-2.5 2-3.5C15 2 13 1 11 1c-1 0-2 1-3 3C7 3 6 2 5 1 3 1 1 2 1 3.5c0 1 .5 2 2 3.5C5 8.63 8 12 8 12z" />
-            </svg>
-            {noticiaSalva ? "Remover" : "Salvar"}
-          </button>
-        </div>
-
+        {/* Tempo de leitura */}
         <p className="text-sm text-gray-300">⏱️ Tempo de leitura: {tempoLeitura} mins</p>
 
         <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
@@ -204,25 +168,45 @@ export default function Noticia() {
             .map((par, i) => <p key={i}>{par.trim()}</p>)}
         </div>
 
+        {/* Botões: compartilhar e salvar */}
+        <div className="flex flex-col md:flex-row gap-4 pt-4 border-t border-white/10 mt-6">
+          <button
+            onClick={compartilharNoticia}
+            className="bg-transparent hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto flex items-center justify-center gap-2"
+          >
+            <i className="bi bi-share text-lg"></i> Compartilhar
+          </button>
+
+          <button
+            onClick={noticiaSalva ? removerNoticia : salvarNoticia}
+            className="bg-transparent hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto flex items-center justify-center gap-2"
+          >
+            <i className={`bi ${noticiaSalva ? "bi-bookmark-heart-fill" : "bi-bookmark-heart"} text-lg`}></i>
+            {noticiaSalva ? "Notícia salva" : "Salvar"}
+          </button>
+        </div>
+
+        {/* Navegação para outros links */}
         <div className="flex flex-col md:flex-row gap-4 pt-4 border-t border-white/10 mt-6">
           <button
             onClick={() => navigate("/")}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto"
+            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto flex items-center justify-center gap-2"
           >
-            Voltar
+            <i className="bi bi-arrow-left"></i> Voltar
           </button>
 
           <a
             href={noticia.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto text-center"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto text-center flex items-center justify-center gap-2"
           >
-            Ler no site original
+            <i className="bi bi-book"></i> Ler no site original
           </a>
         </div>
       </div>
 
+      {/* Outras notícias */}
       {outrasNoticias.length > 0 && (
         <div className="max-w-6xl mx-auto p-6 mt-12 space-y-6">
           <h2 className="text-2xl font-bold">Outras notícias para você</h2>
