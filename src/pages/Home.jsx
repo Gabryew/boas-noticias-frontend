@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 function calcularTempoLeitura(texto) {
   if (!texto) return null;
@@ -110,9 +109,13 @@ export default function Home() {
                   toggleSalvarNoticia(noticia);
                 }}
                 aria-label={salva ? "Remover dos favoritos" : "Salvar nos favoritos"}
-                className="text-white text-3xl animate-pulse hover:scale-110 transition-transform drop-shadow-lg"
+                className="text-white text-4xl animate-pulse hover:scale-110 transition-transform drop-shadow-lg"
               >
-                {salva ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
+                {salva ? (
+                  <i className="bi bi-bookmark-heart-fill text-red-500"></i>
+                ) : (
+                  <i className="bi bi-bookmark-heart"></i>
+                )}
               </button>
             </div>
 
