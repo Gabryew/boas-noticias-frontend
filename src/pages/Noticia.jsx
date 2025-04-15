@@ -13,7 +13,6 @@ export default function Noticia() {
   const { link } = useParams();
   const navigate = useNavigate();
 
-  // 👉 Scrolla pro topo quando o link muda (ou seja, nova notícia é carregada)
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [link]);
@@ -33,7 +32,6 @@ export default function Noticia() {
             .slice(0, 3);
           setOutrasNoticias(outras);
 
-          // Verifica se a notícia já foi salva
           const noticiasSalvas = JSON.parse(localStorage.getItem("noticiasSalvas")) || [];
           if (noticiasSalvas.some((n) => n.link === noticiaEncontrada.link)) {
             setNoticiaSalva(true);
@@ -141,14 +139,30 @@ export default function Noticia() {
         </div>
       </div>
 
-      {/* Coração para salvar a notícia */}
-      <div
-        className={`absolute top-16 right-4 text-red-500 text-4xl cursor-pointer ${noticiaSalva ? "animate-pulse" : ""}`}
-        onClick={noticiaSalva ? removerNoticia : salvarNoticia}
-      >
-        ❤️
+      {/* Área do botão de compartilhar e salvar */}
+      <div className="max-w-3xl mx-auto p-6 space-y-6 flex justify-between items-center">
+        <div className="flex items-center gap-6">
+          {/* Botão de Compartilhar */}
+          <button
+            onClick={compartilharNoticia}
+            className="bg-transparent hover:bg-gray-700 text-white px-4 py-2 rounded-lg border-2 border-gray-500 font-semibold transition"
+          >
+            Compartilhar
+          </button>
+
+          {/* Botão de Salvar/Remover notícia */}
+          <button
+            onClick={noticiaSalva ? removerNoticia : salvarNoticia}
+            className={`text-4xl cursor-pointer ${noticiaSalva ? "text-red-500" : "text-gray-500"}`}
+          >
+            ❤️
+          </button>
+        </div>
+
+        <p className="text-sm text-gray-300">⏱️ Tempo de leitura: {tempoLeitura} mins</p>
       </div>
 
+      {/* Imagem da notícia */}
       <div
         className="h-64 md:h-96 bg-cover bg-center"
         style={{
@@ -158,17 +172,13 @@ export default function Noticia() {
 
       <div className="max-w-3xl mx-auto p-6 space-y-6">
         <div className="space-y-1">
-          <h1 className="text-3xl md:text-4xl font-bold leading-tight">
-            {noticia.title}
-          </h1>
+          <h1 className="text-3xl md:text-4xl font-bold leading-tight">{noticia.title}</h1>
           <div className="text-sm text-gray-400 flex gap-4 flex-wrap">
             <span>{new Date(noticia.pubDate).toLocaleDateString()}</span>
             {noticia.author && <span>Por {noticia.author}</span>}
             {noticia.source && <span>Fonte: {noticia.source}</span>}
           </div>
         </div>
-
-        <p className="text-sm text-gray-300">⏱️ Tempo de leitura: {tempoLeitura} mins</p>
 
         <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
           {noticia.summary
@@ -192,16 +202,10 @@ export default function Noticia() {
           >
             Ler no site original
           </a>
-
-          <button
-            onClick={compartilharNoticia}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto"
-          >
-            Compartilhar
-          </button>
         </div>
       </div>
 
+      {/* Outras notícias */}
       {outrasNoticias.length > 0 && (
         <div className="max-w-6xl mx-auto p-6 mt-12 space-y-6">
           <h2 className="text-2xl font-bold">Outras notícias para você</h2>
