@@ -174,26 +174,32 @@ export default async (req, res) => {
     const todasNoticias = [];
 
     for (const url of RSS_FEEDS) {
-      const feed = await parser.parseURL(url);
+      try {
+        console.log(`Buscando feed RSS: ${url}`);
+        const feed = await parser.parseURL(url);
+        console.log(`Feed RSS carregado: ${url}`);
 
-      const noticiasClassificadas = await Promise.all(feed.items.map(async (item) => {
-        const { classification, image } = await classifyNews(item);
-        const source = extractSourceFromLink(item.link);
-        const author = item.creator || item.author || null;
+        const noticiasClassificadas = await Promise.all(feed.items.map(async (item) => {
+          const { classification, image } = await classifyNews(item);
+          const source = extractSourceFromLink(item.link);
+          const author = item.creator || item.author || null;
 
-        return {
-          title: item.title,
-          summary: item.contentSnippet,
-          link: item.link,
-          pubDate: item.pubDate,
-          classification,
-          image,
-          author,
-          source,
-        };
-      }));
+          return {
+            title: item.title,
+            summary: item.contentSnippet,
+            link: item.link,
+            pubDate: item.pubDate,
+            classification,
+            image,
+            author,
+            source,
+          };
+        }));
 
-      todasNoticias.push(...noticiasClassificadas);
+        todasNoticias.push(...noticiasClassificadas);
+      } catch (feedError) {
+        console.error(`Erro ao buscar feed RSS: ${url}`, feedError);
+      }
     }
 
     res.status(200).json(
