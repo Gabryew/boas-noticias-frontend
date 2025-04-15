@@ -13,6 +13,7 @@
     "@tailwindcss/typography": "^0.5.16",
     "autoprefixer": "^10.4.21",
     "axios": "^1.8.4",
+    "bootstrap-icons": "^1.11.3",
     "compromise": "^13.0.0",
     "framer-motion": "^12.6.5",
     "lucide-react": "^0.488.0",
