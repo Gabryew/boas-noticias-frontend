@@ -1,5 +1,10 @@
 import Parser from "rss-parser";
 import { promises as fs } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const parser = new Parser();
 
@@ -12,12 +17,14 @@ const RSS_FEEDS = [
 ];
 
 async function loadKeywords() {
-  const data = await fs.readFile('keywords.json', 'utf8');
+  const filePath = path.join(__dirname, 'keywords.json');
+  const data = await fs.readFile(filePath, 'utf8');
   return JSON.parse(data);
 }
 
 async function saveKeywords(keywords) {
-  await fs.writeFile('keywords.json', JSON.stringify(keywords, null, 2));
+  const filePath = path.join(__dirname, 'keywords.json');
+  await fs.writeFile(filePath, JSON.stringify(keywords, null, 2));
 }
 
 function cleanText(text) {
