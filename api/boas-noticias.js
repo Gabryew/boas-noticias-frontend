@@ -9,8 +9,7 @@ const FEEDS = [
   'https://feeds.bbci.co.uk/portuguese/rss.xml',
 ];
 
-async function classifyNews(title, content) {
-  const text = `${title} ${content}`;
+async function classifyNews(title) {
   try {
     const response = await fetch('https://api-inference.huggingface.co/models/finiteautomata/bertweet-base-sentiment-analysis', {
       method: 'POST',
@@ -18,10 +17,19 @@ async function classifyNews(title, content) {
         Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`, // Usando a variável de ambiente para o token
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ inputs: text }),
+      body: JSON.stringify({ inputs: title }),  // Enviar apenas o título da notícia
     });
 
-    const result = await response.json();
+    const text = await response.text();  // Obter a resposta como texto
+    let result;
+    
+    try {
+      result = JSON.parse(text);  // Tentar analisar a resposta como JSON
+    } catch (jsonError) {
+      console.error('Erro ao processar JSON da resposta:', jsonError);
+      console.log('Resposta recebida:', text);  // Verificar a resposta recebida
+      return 'neutra';  // Caso o conteúdo não seja um JSON válido, fallback
+    }
 
     if (!Array.isArray(result) || !result[0]) {
       console.warn('Resposta inesperada da Hugging Face:', result);
@@ -74,7 +82,7 @@ export default async function handler(req, res) {
         feed.items.map(async (item) => {
           const title = item.title || '';
           const content = item.contentSnippet || item.content || '';  // Pega o conteúdo de texto
-          const categoria = await classifyNews(title, content);
+          const categoria = await classifyNews(title);  // Agora estamos passando apenas o título
           const tempoLeitura = estimateReadingTime(content);
       
           return {
