@@ -29,11 +29,13 @@ export default function Home() {
   const fetchNoticias = useCallback(async () => {
     try {
       setCarregando(true);
-      const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias`);
-      const novas = response.data
+      const response = await axios.get(
+        `https://boas-noticias-frontend.vercel.app/api/boas-noticias`
+      );
+      const novas = response.data.noticias
         .map((noticia) => ({
           ...noticia,
-          tempoLeitura: calcularTempoLeitura(noticia.summary),
+          tempoLeitura: calcularTempoLeitura(noticia.conteudo),
         }))
         .filter((_, i) => i < pagina * 6); // 6 por página
       setNoticias(novas);
@@ -61,24 +63,27 @@ export default function Home() {
     setFilter((prev) => ({ ...prev, [type]: !prev[type] }));
   };
 
+  // Ajustando o filtro para usar a categoria correta retornada pelo backend
   const filteredNoticias = noticias.filter((noticia) => {
-    if (noticia.classification === "good" && filter.good) return true;
-    if (noticia.classification === "neutral" && filter.neutral) return true;
-    if (noticia.classification === "bad" && filter.bad) return true;
+    if (noticia.categoria === "boa" && filter.good) return true;
+    if (noticia.categoria === "neutra" && filter.neutral) return true;
+    if (noticia.categoria === "ruim" && filter.bad) return true;
     return false;
   });
 
-  const observer = useRef();
-  const ultimaNoticiaRef = useCallback((node) => {
-    if (carregando) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setPagina((prev) => prev + 1);
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [carregando]);
+  const ultimaNoticiaRef = useCallback(
+    (node) => {
+      if (carregando) return;
+      if (observerRef.current) observerRef.current.disconnect();
+      observerRef.current = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) {
+          setPagina((prev) => prev + 1);
+        }
+      });
+      if (node) observerRef.current.observe(node);
+    },
+    [carregando]
+  );
 
   return (
     <div className="w-screen h-screen overflow-y-scroll snap-y snap-mandatory bg-black text-white">
@@ -86,13 +91,17 @@ export default function Home() {
         <div className="flex gap-4 text-sm font-semibold">
           <Link
             to="/"
-            className={`hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
+            className={`hover:underline ${
+              location.pathname === "/" ? "text-white" : "text-gray-400"
+            }`}
           >
             Últimas
           </Link>
           <Link
             to="/noticias-salvas"
-            className={`hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
+            className={`hover:underline ${
+              location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"
+            }`}
           >
             Salvas
           </Link>

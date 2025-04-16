@@ -28,20 +28,23 @@ export default async function handler(req, res) {
   try {
     const allNews = [];
 
+    // Tenta obter notícias de cada feed
     for (const feedUrl of FEEDS) {
       let feed;
       try {
         feed = await parser.parseURL(feedUrl);
       } catch (feedError) {
         console.error(`Erro ao processar o feed ${feedUrl}:`, feedError);
-        continue;  // Se um feed falhar, tenta o próximo
+        continue; // Se um feed falhar, tenta o próximo
       }
 
+      // Verifica se o feed tem itens válidos
       if (!feed || !feed.items || feed.items.length === 0) {
         console.warn(`O feed ${feedUrl} não contém itens válidos ou não é um RSS válido.`);
-        continue;  // Se o feed não contiver itens válidos, pula ele
+        continue; // Se o feed não contiver itens válidos, pula ele
       }
 
+      // Processa cada item do feed
       const parsedNews = feed.items.map((item) => {
         const title = item.title || '';
         const content = item.contentSnippet || item.content || '';
@@ -64,7 +67,13 @@ export default async function handler(req, res) {
       allNews.push(...parsedNews);
     }
 
+    // Filtra apenas as notícias boas
     const boasNoticias = allNews.filter((n) => n.categoria === 'boa');
+
+    // Responde com as boas notícias ou uma mensagem de erro se não houver nenhuma
+    if (boasNoticias.length === 0) {
+      return res.status(200).json({ message: 'Nenhuma notícia boa encontrada.' });
+    }
 
     res.status(200).json({ noticias: boasNoticias });
   } catch (error) {
