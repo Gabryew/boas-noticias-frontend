@@ -25,7 +25,8 @@ export default function Home() {
     async function fetchNoticias() {
       try {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
-        const noticiasComTempo = response.data.map((noticia) => ({
+        console.log("Resposta da API:", response.data);  // Verifique o que está sendo retornado
+        const noticiasComTempo = response.data.noticias.map((noticia) => ({
           ...noticia,
           readingTime: calcularTempoLeitura(noticia.summary),
         }));
@@ -37,9 +38,10 @@ export default function Home() {
         setLoading(false);
       }
     }
-
+  
     fetchNoticias();
   }, []);
+  
 
   const toggleSalvarNoticia = (noticia) => {
     const jaSalva = salvas.find((n) => n.link === noticia.link);
