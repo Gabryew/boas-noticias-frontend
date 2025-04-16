@@ -9,31 +9,30 @@ const FEEDS = [
   'https://feeds.bbci.co.uk/portuguese/rss.xml',
 ];
 
+// Cache para armazenar resultados de classificação e evitar chamadas repetidas
+const cache = new Map();
+
 async function classifyNews(title) {
+  // Verifica se o resultado da classificação já está em cache
+  if (cache.has(title)) {
+    return cache.get(title); // Retorna o resultado em cache
+  }
+
   try {
     const response = await fetch('https://api-inference.huggingface.co/models/finiteautomata/bertweet-base-sentiment-analysis', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`, // Usando a variável de ambiente para o token
+        Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ inputs: title }),  // Enviar apenas o título da notícia
+      body: JSON.stringify({ inputs: title }), // Apenas o título da notícia é enviado
     });
 
-    const text = await response.text();  // Obter a resposta como texto
-    let result;
-    
-    try {
-      result = JSON.parse(text);  // Tentar analisar a resposta como JSON
-    } catch (jsonError) {
-      console.error('Erro ao processar JSON da resposta:', jsonError);
-      console.log('Resposta recebida:', text);  // Verificar a resposta recebida
-      return 'neutra';  // Caso o conteúdo não seja um JSON válido, fallback
-    }
+    const result = await response.json();
 
     if (!Array.isArray(result) || !result[0]) {
       console.warn('Resposta inesperada da Hugging Face:', result);
-      return 'neutra'; // fallback
+      return 'neutra'; // Fallback para 'neutra' se der errado
     }
 
     // Pegando o label com o maior score
@@ -41,13 +40,16 @@ async function classifyNews(title) {
     const highestLabel = labels.reduce((prev, current) => (prev.score > current.score) ? prev : current);
 
     // Classificando com base no maior score
-    if (highestLabel.label === 'POS') return 'boa';
-    if (highestLabel.label === 'NEG') return 'ruim';
-    return 'neutra'; // Se for neutro
+    const classification = highestLabel.label === 'POS' ? 'boa' : highestLabel.label === 'NEG' ? 'ruim' : 'neutra';
+
+    // Armazena o resultado no cache
+    cache.set(title, classification);
+
+    return classification;
 
   } catch (error) {
     console.error('Erro na classificação NLP:', error);
-    return 'neutra';
+    return 'neutra'; // Se der erro, considera como 'neutra'
   }
 }
 
@@ -77,12 +79,12 @@ export default async function handler(req, res) {
         continue; // Se o feed não contiver itens válidos, pula ele
       }
 
-      // Processa cada item do feed
+      // Processa cada item do feed em paralelo (melhora o tempo de execução)
       const parsedNews = await Promise.all(
         feed.items.map(async (item) => {
           const title = item.title || '';
           const content = item.contentSnippet || item.content || '';  // Pega o conteúdo de texto
-          const categoria = await classifyNews(title);  // Agora estamos passando apenas o título
+          const categoria = await classifyNews(title); // Agora passamos apenas o título
           const tempoLeitura = estimateReadingTime(content);
       
           return {
