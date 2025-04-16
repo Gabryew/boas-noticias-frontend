@@ -28,7 +28,7 @@ export default function Home() {
         console.log("Resposta da API:", response.data);  // Verifique o que está sendo retornado
         const noticiasComTempo = response.data.noticias.map((noticia) => ({
           ...noticia,
-          readingTime: calcularTempoLeitura(noticia.summary),
+          readingTime: calcularTempoLeitura(noticia.conteudo || noticia.summary),
         }));
         console.log("Notícias carregadas:", noticiasComTempo); // Log para depuração
         setNoticias(noticiasComTempo);

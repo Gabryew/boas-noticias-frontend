@@ -15,6 +15,7 @@ const cache = new Map();
 async function classifyNews(title) {
   // Verifica se o resultado da classificação já está em cache
   if (cache.has(title)) {
+    console.log(`Resultado do cache para o título: "${title}"`);
     return cache.get(title); // Retorna o resultado em cache
   }
 
@@ -38,6 +39,8 @@ async function classifyNews(title) {
     // Pegando o label com o maior score
     const labels = result[0];
     const highestLabel = labels.reduce((prev, current) => (prev.score > current.score) ? prev : current);
+
+    console.log(`Título: "${title}", Classificação: ${highestLabel.label}`);
 
     // Classificando com base no maior score
     const classification = highestLabel.label === 'POS' ? 'boa' : highestLabel.label === 'NEG' ? 'ruim' : 'neutra';
@@ -104,8 +107,14 @@ export default async function handler(req, res) {
       allNews.push(...parsedNews);  // Adiciona as notícias do feed ao array principal
     }
 
+    // Verificando se a classificação das notícias está funcionando corretamente
+    console.log("Todas as notícias processadas:", allNews);
+
     // Filtra apenas as notícias boas
     const boasNoticias = allNews.filter((n) => n.categoria === 'boa');
+    
+    // Verificando as boas notícias filtradas
+    console.log("Boas notícias filtradas:", boasNoticias);
 
     // Responde com as boas notícias ou uma mensagem de erro se não houver nenhuma
     if (boasNoticias.length === 0) {
