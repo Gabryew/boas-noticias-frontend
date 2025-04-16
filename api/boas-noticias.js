@@ -1,4 +1,3 @@
-// api/boas-noticias.js
 import Parser from 'rss-parser';
 import { keywords } from './keywords.js';
 
@@ -31,7 +30,18 @@ export default async function handler(req, res) {
     const allNews = [];
 
     for (const feedUrl of FEEDS) {
-      const feed = await parser.parseURL(feedUrl);
+      let feed;
+      try {
+        feed = await parser.parseURL(feedUrl);
+      } catch (feedError) {
+        console.error(`Erro ao processar o feed ${feedUrl}:`, feedError);
+        continue;  // Se um feed falhar, tenta o próximo
+      }
+
+      if (!feed || !feed.items || feed.items.length === 0) {
+        console.warn(`O feed ${feedUrl} não contém itens válidos ou não é um RSS válido.`);
+        continue;  // Se o feed não contiver itens válidos, pula ele
+      }
 
       const parsedNews = feed.items.map((item) => {
         const title = item.title || '';
