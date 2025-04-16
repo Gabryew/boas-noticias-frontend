@@ -12,14 +12,10 @@ const parsedAccount = JSON.parse(serviceAccount);
 parsedAccount.private_key = parsedAccount.private_key.replace(/\\n/g, '\n');
 
 if (!admin.apps.length) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.cert(parsedAccount),
-    });
-    console.log("Firebase Admin SDK inicializado com sucesso.");
-  } catch (error) {
-    console.error("Erro ao inicializar o Firebase Admin SDK:", error);
-  }
+  admin.initializeApp({
+    credential: admin.credential.cert(parsedAccount),
+  });
+  console.log("Firebase Admin SDK inicializado com sucesso.");
 }
 
 const db = admin.firestore();
