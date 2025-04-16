@@ -1,5 +1,8 @@
 import Parser from 'rss-parser';
-import { keywords } from './keywords.js';
+import fetch from 'node-fetch';
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 const parser = new Parser();
 const FEEDS = [
@@ -7,15 +10,35 @@ const FEEDS = [
   'https://feeds.bbci.co.uk/portuguese/rss.xml',
 ];
 
-function classifyNews(title, content) {
-  const text = `${title} ${content}`.toLowerCase();
+async function classifyNews(title, content) {
+  const text = `${title} ${content}`;
+  try {
+    const response = await fetch('https://api-inference.huggingface.co/models/finiteautomata/bertweet-base-sentiment-analysis', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ inputs: text })
+    });
 
-  const positiveScore = keywords.positiveKeywords.filter((k) => text.includes(k)).length;
-  const negativeScore = keywords.negativeKeywords.filter((k) => text.includes(k)).length;
+    const result = await response.json();
 
-  if (positiveScore > negativeScore) return 'boa';
-  if (negativeScore > positiveScore) return 'ruim';
-  return 'neutra';
+    if (!Array.isArray(result) || !result[0]) {
+      console.warn('Resposta inesperada da Hugging Face:', result);
+      return 'neutra'; // fallback
+    }
+
+    const label = result[0][0].label.toLowerCase();
+
+    if (label.includes('positive')) return 'boa';
+    if (label.includes('negative')) return 'ruim';
+    return 'neutra';
+
+  } catch (error) {
+    console.error('Erro na classificação NLP:', error);
+    return 'neutra';
+  }
 }
 
 function estimateReadingTime(content) {
@@ -45,24 +68,26 @@ export default async function handler(req, res) {
       }
 
       // Processa cada item do feed
-      const parsedNews = feed.items.map((item) => {
-        const title = item.title || '';
-        const content = item.contentSnippet || item.content || '';  // Pega o conteúdo de texto
-        const categoria = classifyNews(title, content);
-        const tempoLeitura = estimateReadingTime(content);
-
-        return {
-          titulo: title,
-          conteudo: content,
-          link: item.link,
-          data: item.pubDate,
-          imagem: item.enclosure?.url || null,  // Pega a URL da imagem, se houver
-          autor: item.creator || item.author || 'Desconhecido',  // Autor da notícia
-          veiculo: feed.title,  // Veículo de mídia
-          categoria,
-          tempoLeitura
-        };
-      });
+      const parsedNews = await Promise.all(
+        feed.items.map(async (item) => {
+          const title = item.title || '';
+          const content = item.contentSnippet || item.content || '';  // Pega o conteúdo de texto
+          const categoria = await classifyNews(title, content);
+          const tempoLeitura = estimateReadingTime(content);
+      
+          return {
+            titulo: title,
+            conteudo: content,
+            link: item.link,
+            data: item.pubDate,
+            imagem: item.enclosure?.url || null,  // Pega a URL da imagem, se houver
+            autor: item.creator || item.author || 'Desconhecido',  // Autor da notícia
+            veiculo: feed.title,  // Veículo de mídia
+            categoria,
+            tempoLeitura
+          };
+        })
+      );
 
       allNews.push(...parsedNews);  // Adiciona as notícias do feed ao array principal
     }
