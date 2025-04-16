@@ -1,8 +1,7 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import Filtros from "../components/Filtros";
-import CardNoticia from "../components/CardNoticia";
+import { motion } from "framer-motion";
 
 function calcularTempoLeitura(texto) {
   if (!texto) return null;
@@ -14,134 +13,182 @@ function calcularTempoLeitura(texto) {
 
 export default function Home() {
   const [noticias, setNoticias] = useState([]);
-  const [pagina, setPagina] = useState(1);
-  const [carregando, setCarregando] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [salvas, setSalvas] = useState(() => {
     const local = localStorage.getItem("noticiasSalvas");
     return local ? JSON.parse(local) : [];
   });
-  const [filter, setFilter] = useState({ good: true, neutral: true, bad: true });
-
-  const observerRef = useRef();
+  const [filter, setFilter] = useState({
+    good: true,
+    neutral: true,
+    bad: true,
+  });
   const navigate = useNavigate();
   const location = useLocation();
 
-  const fetchNoticias = useCallback(async () => {
-    try {
-      setCarregando(true);
-      const response = await axios.get(
-        `https://boas-noticias-frontend.vercel.app/api/boas-noticias`
-      );
-      const novas = response.data.noticias
-        .map((noticia) => ({
-          ...noticia,
-          tempoLeitura: calcularTempoLeitura(noticia.conteudo),
-        }))
-        .filter((_, i) => i < pagina * 6); // 6 por página
-      setNoticias(novas);
-    } catch (error) {
-      console.error("Erro ao buscar notícias:", error);
-    } finally {
-      setCarregando(false);
-    }
-  }, [pagina]);
-
   useEffect(() => {
+    async function fetchNoticias() {
+      try {
+        const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
+        const noticiasComTempo = response.data.map((noticia) => ({
+          ...noticia,
+          readingTime: calcularTempoLeitura(noticia.summary),
+        }));
+        console.log("Notícias carregadas:", noticiasComTempo); // Log para depuração
+        setNoticias(noticiasComTempo);
+      } catch (error) {
+        console.error("Erro ao buscar notícias:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     fetchNoticias();
-  }, [fetchNoticias]);
+  }, []);
 
   const toggleSalvarNoticia = (noticia) => {
     const jaSalva = salvas.find((n) => n.link === noticia.link);
-    const atualizadas = jaSalva
-      ? salvas.filter((n) => n.link !== noticia.link)
-      : [...salvas, noticia];
+    let atualizadas;
+    if (jaSalva) {
+      atualizadas = salvas.filter((n) => n.link !== noticia.link);
+    } else {
+      atualizadas = [...salvas, noticia];
+    }
     setSalvas(atualizadas);
     localStorage.setItem("noticiasSalvas", JSON.stringify(atualizadas));
   };
 
   const handleFilterChange = (type) => {
-    setFilter((prev) => ({ ...prev, [type]: !prev[type] }));
+    setFilter((prevFilter) => ({
+      ...prevFilter,
+      [type]: !prevFilter[type],
+    }));
   };
 
-  // Ajustando o filtro para usar a categoria correta retornada pelo backend
   const filteredNoticias = noticias.filter((noticia) => {
-    if (noticia.categoria === "boa" && filter.good) return true;
-    if (noticia.categoria === "neutra" && filter.neutral) return true;
-    if (noticia.categoria === "ruim" && filter.bad) return true;
+    if (noticia.classification === "good" && filter.good) return true;
+    if (noticia.classification === "neutral" && filter.neutral) return true;
+    if (noticia.classification === "bad" && filter.bad) return true;
     return false;
   });
 
-  const ultimaNoticiaRef = useCallback(
-    (node) => {
-      if (carregando) return;
-      if (observerRef.current) observerRef.current.disconnect();
-      observerRef.current = new IntersectionObserver(([entry]) => {
-        if (entry.isIntersecting) {
-          setPagina((prev) => prev + 1);
-        }
-      });
-      if (node) observerRef.current.observe(node);
-    },
-    [carregando]
-  );
+  console.log("Notícias filtradas:", filteredNoticias); // Log para depuração
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-black">
+        <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-screen h-screen overflow-y-scroll snap-y snap-mandatory bg-black text-white">
+      {/* Menu superior */}
       <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
         <div className="flex gap-4 text-sm font-semibold">
           <Link
             to="/"
-            className={`hover:underline ${
-              location.pathname === "/" ? "text-white" : "text-gray-400"
-            }`}
+            className={`hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
           >
-            Últimas
+            Últimas Notícias
           </Link>
           <Link
             to="/noticias-salvas"
-            className={`hover:underline ${
-              location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"
-            }`}
+            className={`hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
           >
-            Salvas
+            Notícias Salvas
           </Link>
         </div>
-        <Filtros filter={filter} onChange={handleFilterChange} />
+        <div className="flex gap-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={filter.good}
+              onChange={() => handleFilterChange("good")}
+              className="mr-2"
+            />
+            Boas Notícias
+          </label>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={filter.neutral}
+              onChange={() => handleFilterChange("neutral")}
+              className="mr-2"
+            />
+            Notícias Neutras
+          </label>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={filter.bad}
+              onChange={() => handleFilterChange("bad")}
+              className="mr-2"
+            />
+            Notícias Ruins
+          </label>
+        </div>
       </div>
 
-      {filteredNoticias.length === 0 && !carregando ? (
+      {filteredNoticias.length === 0 ? (
         <div className="flex items-center justify-center h-screen text-white">
           Nenhuma notícia encontrada.
         </div>
       ) : (
         filteredNoticias.map((noticia, index) => {
           const salva = salvas.find((n) => n.link === noticia.link);
-          const isLast = index === filteredNoticias.length - 1;
 
           return (
-            <CardNoticia
-              key={noticia.link}
-              noticia={noticia}
-              salva={salva}
-              toggleSalvarNoticia={toggleSalvarNoticia}
-              isLast={isLast}
-              ultimaNoticiaRef={ultimaNoticiaRef}
-            />
+            <motion.div
+              key={index}
+              className="w-screen h-screen snap-start relative flex items-end justify-center cursor-pointer"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: index * 0.1 }}
+              onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
+              style={{
+                backgroundImage: noticia.image ? `url(${noticia.image})` : undefined,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                backgroundColor: noticia.image ? "transparent" : "#111",
+              }}
+            >
+              {/* Gradiente de fundo */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-0" />
+
+              {/* Ícone de salvar */}
+              <div className="absolute top-20 right-4 z-20">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSalvarNoticia(noticia);
+                  }}
+                  aria-label={salva ? "Remover dos favoritos" : "Salvar nos favoritos"}
+                  className="text-white text-4xl hover:scale-110 transition-transform drop-shadow-lg"
+                >
+                  {salva ? (
+                    <i className="bi bi-bookmark-heart-fill text-red-500"></i>
+                  ) : (
+                    <i className="bi bi-bookmark-heart"></i>
+                  )}
+                </button>
+              </div>
+
+              {/* Conteúdo da notícia */}
+              <div className="relative z-10 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm">
+                <h1 className="text-3xl md:text-4xl font-extrabold leading-tight drop-shadow-lg">
+                  {noticia.title}
+                </h1>
+                <div className="text-sm text-gray-300 flex flex-col gap-1 font-light">
+                  {noticia.source && <span>{noticia.source}</span>}
+                  {noticia.readingTime && <span>Tempo de leitura: {noticia.readingTime}</span>}
+                </div>
+              </div>
+            </motion.div>
           );
         })
-      )}
-
-      {carregando && (
-        <div className="w-screen h-screen flex items-center justify-center">
-          <div className="w-full h-full flex flex-col gap-4 items-center justify-center">
-            {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="w-3/4 h-32 bg-gray-800 animate-pulse rounded-xl"
-              />
-            ))}
-          </div>
-        </div>
       )}
     </div>
   );
