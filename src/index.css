@@ -5,16 +5,35 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Suas regras personalizadas continuam aqui */
+/* Customizações adicionais */
+
+/* Corpo da página */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #111; /* Cor de fundo escuro */
+  color: #fff; /* Texto branco para contraste */
 }
 
+/* Estilo para o código */
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* Estilo global de links, para garantir consistência */
+a {
+  color: #38bdf8; /* Azul padrão */
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline; /* Efeito de hover */
+}
+
+/* Ajuste para elementos com foco, como links e botões */
+*:focus {
+  outline: 2px solid #38bdf8; /* Cor de foco azul */
+  outline-offset: 2px;
 }

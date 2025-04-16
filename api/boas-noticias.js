@@ -19,9 +19,9 @@ function classifyNews(title, content) {
 }
 
 function estimateReadingTime(content) {
-  const wordsPerMinute = 200;
-  const wordCount = content?.split(/\s+/).length || 0;
-  return Math.ceil(wordCount / wordsPerMinute);
+  const wordsPerMinute = 200;  // Média de palavras por minuto
+  const wordCount = content?.split(/\s+/).length || 0;  // Conta o número de palavras
+  return Math.ceil(wordCount / wordsPerMinute);  // Retorna o tempo de leitura arredondado para cima
 }
 
 export default async function handler(req, res) {
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
       // Processa cada item do feed
       const parsedNews = feed.items.map((item) => {
         const title = item.title || '';
-        const content = item.contentSnippet || item.content || '';
+        const content = item.contentSnippet || item.content || '';  // Pega o conteúdo de texto
         const categoria = classifyNews(title, content);
         const tempoLeitura = estimateReadingTime(content);
 
@@ -56,15 +56,15 @@ export default async function handler(req, res) {
           conteudo: content,
           link: item.link,
           data: item.pubDate,
-          imagem: item.enclosure?.url || null,
-          autor: item.creator || item.author || 'Desconhecido',
-          veiculo: feed.title,
+          imagem: item.enclosure?.url || null,  // Pega a URL da imagem, se houver
+          autor: item.creator || item.author || 'Desconhecido',  // Autor da notícia
+          veiculo: feed.title,  // Veículo de mídia
           categoria,
           tempoLeitura
         };
       });
 
-      allNews.push(...parsedNews);
+      allNews.push(...parsedNews);  // Adiciona as notícias do feed ao array principal
     }
 
     // Filtra apenas as notícias boas
