@@ -1,188 +1,65 @@
-import Parser from "rss-parser";
-import { db } from "./firebaseAdmin.js"; // Certifique-se de que seu db está configurado corretamente
-import { doc, getDoc, setDoc } from "firebase/firestore"; // Importando as funções necessárias do Firebase
+// api/boas-noticias.js
+import Parser from 'rss-parser';
+import { keywords } from './keywords.js';
 
 const parser = new Parser();
-
-const RSS_FEEDS = [
-  "https://g1.globo.com/rss/g1/",
-  "https://www.bbc.com/portuguese/index.xml",
-  "https://www.catracalivre.com.br/feed/",
-  "https://agenciabrasil.ebc.com.br/rss/ultimasnoticias/feed.xml",
-  "https://www.cnnbrasil.com.br/rss/",
+const FEEDS = [
+  'https://g1.globo.com/rss/g1/',
+  'https://rss.uol.com.br/feed/noticias.xml',
+  'https://feeds.bbci.co.uk/portuguese/rss.xml',
 ];
 
-function cleanText(text) {
-  return text.replace(/[^\w\s]/g, "").toLowerCase();
+function classifyNews(title, content) {
+  const text = `${title} ${content}`.toLowerCase();
+
+  const positiveScore = keywords.positiveKeywords.filter((k) => text.includes(k)).length;
+  const negativeScore = keywords.negativeKeywords.filter((k) => text.includes(k)).length;
+
+  if (positiveScore > negativeScore) return 'boa';
+  if (negativeScore > positiveScore) return 'ruim';
+  return 'neutra';
 }
 
-function extractImage(item) {
-  const possibleFields = [
-    item.enclosure?.url,
-    item["media:content"]?.url,
-    item["content:encoded"],
-    item["content"],
-    item["summary"],
-    item["content:encodedSnippet"],
-    item["summaryDetail"]?.value,
-  ];
-
-  for (const field of possibleFields) {
-    if (typeof field === "string") {
-      const match = field.match(/<img[^>]+src="([^">]+)"/);
-      if (match) return match[1];
-    }
-  }
-
-  return null;
+function estimateReadingTime(content) {
+  const wordsPerMinute = 200;
+  const wordCount = content?.split(/\s+/).length || 0;
+  return Math.ceil(wordCount / wordsPerMinute);
 }
 
-function extractSourceFromLink(link) {
+export default async function handler(req, res) {
   try {
-    const url = new URL(link);
-    const hostname = url.hostname.replace("www.", "");
-    const parts = hostname.split(".");
-    return parts.length > 1 ? parts[0].toUpperCase() : hostname.toUpperCase();
-  } catch (e) {
-    return null;
-  }
-}
+    const allNews = [];
 
-async function loadKeywords() {
-  try {
-    const docRef = doc(db, "keywords", "keywords");  // Referência ao documento de palavras-chave
-    console.log("Referência ao documento:", docRef);
+    for (const feedUrl of FEEDS) {
+      const feed = await parser.parseURL(feedUrl);
 
-    const docSnap = await getDoc(docRef);  // Obtendo o documento
-    console.log("Documento obtido:", docSnap);
-
-    if (docSnap.exists()) {
-      console.log("Documento encontrado:", docSnap.data());
-      return docSnap.data();  // Se o documento existir, retorna os dados
-    } else {
-      console.log("Documento não encontrado, criando...");
-      const initialKeywords = {
-        positiveKeywords: [
-          "cura", "descoberta", "ajudou", "vitória", "solidariedade", "avançou", "reconhecimento",
-          "conquista", "inovação", "superação", "melhoria", "comunidade", "ajuda", "preservação",
-          "vacinado", "campanha", "educação", "recuperação", "aliança", "progresso", "acolhimento",
-          "inclusão", "emprego", "renovação", "acordo", "projeto social", "salvamento", "renascimento",
-          "ajuda humanitária", "medicação", "apoio", "expansão"
-        ],
-        negativeKeywords: [
-          "tragédia", "morte", "assassinato", "crime", "violência", "desastre", "incêndio", "fogo",
-          "desabamento", "acidente", "explosão", "tragicamente", "colapso", "guerra", "conflito",
-          "corrupção", "fraude", "crise", "falência", "dano", "assalto", "ferido", "infecção",
-          "envenenamento", "atentado", "caos", "inundação", "desespero", "lockdown", "pandemia",
-          "falta de", "explosivo", "repressão", "desabrigo", "enxurrada", "tragédias ambientais"
-        ]
-      };
-      await setDoc(docRef, initialKeywords);  // Salva as palavras iniciais no Firestore
-      return initialKeywords;
-    }
-  } catch (error) {
-    console.error("Erro ao acessar o documento:", error);
-    throw new Error("Erro ao acessar o Firestore.");
-  }
-}
-
-async function saveKeywords(keywords) {
-  const docRef = doc(db, "keywords", "keywords");
-
-  try {
-    await setDoc(docRef, keywords);
-    console.log("Palavras-chave salvas com sucesso.");
-  } catch (error) {
-    console.error("Erro ao salvar as palavras-chave:", error);
-  }
-}
-
-async function updateKeywords(noticia, classification) {
-  const keywords = await loadKeywords();
-  const text = cleanText(`${noticia.title} ${noticia.contentSnippet || ""}`);
-  const words = text.split(/\s+/);
-
-  words.forEach(word => {
-    if (classification === 'good' && !keywords.positiveKeywords.includes(word)) {
-      keywords.positiveKeywords.push(word);
-    } else if (classification === 'bad' && !keywords.negativeKeywords.includes(word)) {
-      keywords.negativeKeywords.push(word);
-    }
-  });
-
-  await saveKeywords(keywords);
-}
-
-async function classifyNews(noticia) {
-  const keywords = await loadKeywords();
-  const text = cleanText(`${noticia.title} ${noticia.contentSnippet || ""}`);
-  let score = 0;
-
-  keywords.positiveKeywords.forEach(word => {
-    if (text.includes(word)) score += 1;
-  });
-
-  keywords.negativeKeywords.forEach(word => {
-    if (text.includes(word)) score -= 1;
-  });
-
-  const classification = score > 1 ? "good" : score < -1 ? "bad" : "neutral";
-  const image = extractImage(noticia);
-
-  await updateKeywords(noticia, classification);
-
-  return { classification, image };
-}
-
-async function fetchNoticias() {
-  const todasNoticias = [];
-
-  for (const url of RSS_FEEDS) {
-    try {
-      const feed = await parser.parseURL(url);
-      console.log(`Feed carregado de ${url}:`, feed);
-
-      const noticiasClassificadas = await Promise.all(feed.items.map(async (item) => {
-        const { classification, image } = await classifyNews(item);
-        const source = extractSourceFromLink(item.link);
-        const author = item.creator || item.author || null;
+      const parsedNews = feed.items.map((item) => {
+        const title = item.title || '';
+        const content = item.contentSnippet || item.content || '';
+        const categoria = classifyNews(title, content);
+        const tempoLeitura = estimateReadingTime(content);
 
         return {
-          title: item.title,
-          summary: item.contentSnippet,
+          titulo: title,
+          conteudo: content,
           link: item.link,
-          pubDate: item.pubDate,
-          classification,
-          image,
-          author,
-          source,
+          data: item.pubDate,
+          imagem: item.enclosure?.url || null,
+          autor: item.creator || item.author || 'Desconhecido',
+          veiculo: feed.title,
+          categoria,
+          tempoLeitura
         };
-      }));
+      });
 
-      todasNoticias.push(...noticiasClassificadas);
-    } catch (error) {
-      console.error(`Erro ao carregar feed de ${url}:`, error);
+      allNews.push(...parsedNews);
     }
-  }
 
-  return todasNoticias.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-}
+    const boasNoticias = allNews.filter((n) => n.categoria === 'boa');
 
-// 🚀 Handler principal da função Vercel
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  try {
-    const noticias = await fetchNoticias();
-    res.status(200).json(noticias);
+    res.status(200).json({ noticias: boasNoticias });
   } catch (error) {
-    console.error("Erro ao buscar notícias:", error);
-    res.status(500).json({ error: "Erro ao buscar notícias" });
+    console.error('Erro ao obter notícias:', error);
+    res.status(500).json({ error: 'Erro ao obter notícias' });
   }
 }
