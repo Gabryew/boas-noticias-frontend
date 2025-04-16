@@ -50,10 +50,12 @@ function extractSourceFromLink(link) {
 
 async function loadKeywords() {
   const docRef = doc(db, "keywords", "keywords");  // Referência ao documento de palavras-chave
-  
+  console.log("Referência ao documento:", docRef);
+
   try {
     const docSnap = await getDoc(docRef);  // Obtendo o documento
-    
+    console.log("Documento obtido:", docSnap);
+
     if (docSnap.exists()) {
       console.log("Documento encontrado:", docSnap.data());
       return docSnap.data();  // Se o documento existir, retorna os dados
@@ -86,7 +88,7 @@ async function loadKeywords() {
 
 async function saveKeywords(keywords) {
   const docRef = doc(db, "keywords", "keywords");
-  
+
   try {
     await setDoc(docRef, keywords);
     console.log("Palavras-chave salvas com sucesso.");
