@@ -4,7 +4,6 @@ import { keywords } from './keywords.js';
 const parser = new Parser();
 const FEEDS = [
   'https://g1.globo.com/rss/g1/',
-  'https://rss.uol.com.br/feed/noticias.xml',
   'https://feeds.bbci.co.uk/portuguese/rss.xml',
 ];
 
