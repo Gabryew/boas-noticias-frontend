@@ -49,10 +49,10 @@ function extractSourceFromLink(link) {
 }
 
 async function loadKeywords() {
-  const docRef = doc(db, "keywords", "keywords");  // Referência ao documento de palavras-chave
-  console.log("Referência ao documento:", docRef);
-
   try {
+    const docRef = doc(db, "keywords", "keywords");  // Referência ao documento de palavras-chave
+    console.log("Referência ao documento:", docRef);
+
     const docSnap = await getDoc(docRef);  // Obtendo o documento
     console.log("Documento obtido:", docSnap);
 
@@ -138,26 +138,31 @@ async function fetchNoticias() {
   const todasNoticias = [];
 
   for (const url of RSS_FEEDS) {
-    const feed = await parser.parseURL(url);
+    try {
+      const feed = await parser.parseURL(url);
+      console.log(`Feed carregado de ${url}:`, feed);
 
-    const noticiasClassificadas = await Promise.all(feed.items.map(async (item) => {
-      const { classification, image } = await classifyNews(item);
-      const source = extractSourceFromLink(item.link);
-      const author = item.creator || item.author || null;
+      const noticiasClassificadas = await Promise.all(feed.items.map(async (item) => {
+        const { classification, image } = await classifyNews(item);
+        const source = extractSourceFromLink(item.link);
+        const author = item.creator || item.author || null;
 
-      return {
-        title: item.title,
-        summary: item.contentSnippet,
-        link: item.link,
-        pubDate: item.pubDate,
-        classification,
-        image,
-        author,
-        source,
-      };
-    }));
+        return {
+          title: item.title,
+          summary: item.contentSnippet,
+          link: item.link,
+          pubDate: item.pubDate,
+          classification,
+          image,
+          author,
+          source,
+        };
+      }));
 
-    todasNoticias.push(...noticiasClassificadas);
+      todasNoticias.push(...noticiasClassificadas);
+    } catch (error) {
+      console.error(`Erro ao carregar feed de ${url}:`, error);
+    }
   }
 
   return todasNoticias.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
