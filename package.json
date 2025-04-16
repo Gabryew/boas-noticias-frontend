@@ -15,6 +15,7 @@
     "axios": "^1.8.4",
     "bootstrap-icons": "^1.11.3",
     "compromise": "^13.0.0",
+    "dotenv": "^16.5.0",
     "framer-motion": "^12.6.5",
     "lucide-react": "^0.488.0",
     "node-fetch": "^3.3.2",
