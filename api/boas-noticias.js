@@ -3,7 +3,6 @@ import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 dotenv.config();
 
-
 const parser = new Parser();
 const FEEDS = [
   'https://g1.globo.com/rss/g1/',
@@ -16,10 +15,10 @@ async function classifyNews(title, content) {
     const response = await fetch('https://api-inference.huggingface.co/models/finiteautomata/bertweet-base-sentiment-analysis', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`, // Usando a variável de ambiente para o token
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ inputs: text })
+      body: JSON.stringify({ inputs: text }),
     });
 
     const result = await response.json();
@@ -29,11 +28,14 @@ async function classifyNews(title, content) {
       return 'neutra'; // fallback
     }
 
-    const label = result[0][0].label.toLowerCase();
+    // Pegando o label com o maior score
+    const labels = result[0];
+    const highestLabel = labels.reduce((prev, current) => (prev.score > current.score) ? prev : current);
 
-    if (label.includes('positive')) return 'boa';
-    if (label.includes('negative')) return 'ruim';
-    return 'neutra';
+    // Classificando com base no maior score
+    if (highestLabel.label === 'POS') return 'boa';
+    if (highestLabel.label === 'NEG') return 'ruim';
+    return 'neutra'; // Se for neutro
 
   } catch (error) {
     console.error('Erro na classificação NLP:', error);
