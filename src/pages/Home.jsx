@@ -30,11 +30,12 @@ export default function Home() {
     setLoading(true);
     try {
       const { data } = await axios.get(`/api/boas-noticias?page=${page}`);
-      if (Array.isArray(data)) {
-        if (data.length === 0) {
+      const noticias = data.noticias; // Acessa a propriedade correta
+      if (Array.isArray(noticias)) {
+        if (noticias.length === 0) {
           setHasMore(false);
         } else {
-          setNoticias((prev) => [...prev, ...data]);
+          setNoticias((prev) => [...prev, ...noticias]);
         }
       } else {
         console.warn("Formato inesperado:", data);
