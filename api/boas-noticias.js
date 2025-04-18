@@ -17,7 +17,7 @@ function classificarNoticia(texto) {
     return cache.get(texto);
   }
 
-  const resultado = sentiment.analyze(texto || "");
+  const resultado = sentiment.analyze(texto || '');
   let classificacao;
 
   if (resultado.score > 1) classificacao = 'boa';
