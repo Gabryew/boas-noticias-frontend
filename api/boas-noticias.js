@@ -34,6 +34,12 @@ function estimateReadingTime(content) {
   return Math.ceil(wordCount / wordsPerMinute);
 }
 
+function extractImageUrl(content) {
+  const imgRegex = /<img[^>]+src="([^">]+)"/;
+  const match = content.match(imgRegex);
+  return match ? match[1] : null;
+}
+
 export default async function handler(req, res) {
   try {
     const allNews = [];
@@ -62,15 +68,8 @@ export default async function handler(req, res) {
           const categoria = classificarNoticia(title + ' ' + content);
           const tempoLeitura = estimateReadingTime(content);
 
-          // Tentar obter a imagem de diferentes campos
-          let imageUrl = null;
-          if (item.enclosure && item.enclosure.url) {
-            imageUrl = item.enclosure.url;
-          } else if (item['media:content'] && item['media:content'].$.url) {
-            imageUrl = item['media:content'].$.url;
-          } else if (item['media:thumbnail'] && item['media:thumbnail'].$.url) {
-            imageUrl = item['media:thumbnail'].$.url;
-          }
+          // Tentar obter a imagem do conteúdo HTML
+          let imageUrl = extractImageUrl(content);
 
           console.log('Estrutura do item:', item); // Log para verificar a estrutura completa do item
           console.log('Imagem do item:', imageUrl); // Log para verificar a URL da imagem

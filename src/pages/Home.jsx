@@ -108,6 +108,9 @@ export default function Home() {
                 backgroundRepeat: "no-repeat",
               }}
             >
+              {/* Log para verificar a URL da imagem aplicada */}
+              {noticia.image && console.log(`Aplicando imagem de fundo: ${noticia.image}`)}
+
               {/* Sobrepor a imagem com fundo escuro para visibilidade do texto */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-10" />
 
