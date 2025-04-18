@@ -19,7 +19,7 @@ async function classifyNews(title) {
   }
 
   try {
-    const response = await fetch('https://api-inference.huggingface.co/models/pierreguillou/bert-base-cased-sentiment-analysis-sst2-ptbr', {
+    const response = await fetch('https://api-inference.huggingface.co/models/nlptown/bert-base-multilingual-uncased-sentiment', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
@@ -45,19 +45,14 @@ async function classifyNews(title) {
     const labels = result[0];
     const highestLabel = labels.reduce((prev, current) => (prev.score > current.score) ? prev : current);
 
+    const stars = parseInt(highestLabel.label[0]); // "4 stars" → 4
     let classification;
-    switch (highestLabel.label.toLowerCase()) {
-      case 'positive':
-        classification = 'boa';
-        break;
-      case 'negative':
-        classification = 'ruim';
-        break;
-      default:
-        classification = 'neutra';
-    }
 
-    console.log(`🎯 Título: "${title}", Classificação: ${classification} (${highestLabel.label})`);
+    if (stars >= 4) classification = 'boa';
+    else if (stars === 3) classification = 'neutra';
+    else classification = 'ruim';
+
+    console.log(`🌟 Título: "${title}" → ${stars} estrelas → ${classification}`);
 
     cache.set(title, classification);
     return classification;
