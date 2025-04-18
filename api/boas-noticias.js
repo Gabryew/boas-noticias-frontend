@@ -13,46 +13,58 @@ const FEEDS = [
 const cache = new Map();
 
 async function classifyNews(title) {
-  // Verifica se o resultado da classificação já está em cache
   if (cache.has(title)) {
     console.log(`Resultado do cache para o título: "${title}"`);
-    return cache.get(title); // Retorna o resultado em cache
+    return cache.get(title);
   }
 
   try {
-    const response = await fetch('https://api-inference.huggingface.co/models/finiteautomata/bertweet-base-sentiment-analysis', {
+    const response = await fetch('https://api-inference.huggingface.co/models/pierreguillou/bert-base-cased-sentiment-analysis-sst2-ptbr', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ inputs: title }), // Apenas o título da notícia é enviado
+      body: JSON.stringify({ inputs: title }),
     });
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const errorText = await response.text();
+      console.error('❌ Resposta da Hugging Face não é JSON:', errorText);
+      return 'neutra';
+    }
 
     const result = await response.json();
 
     if (!Array.isArray(result) || !result[0]) {
-      console.warn('Resposta inesperada da Hugging Face:', result);
-      return 'neutra'; // Fallback para 'neutra' se der errado
+      console.warn('⚠️ Resposta inesperada da Hugging Face:', result);
+      return 'neutra';
     }
 
-    // Pegando o label com o maior score
     const labels = result[0];
     const highestLabel = labels.reduce((prev, current) => (prev.score > current.score) ? prev : current);
 
-    console.log(`Título: "${title}", Classificação: ${highestLabel.label}`);
+    let classification;
+    switch (highestLabel.label.toLowerCase()) {
+      case 'positive':
+        classification = 'boa';
+        break;
+      case 'negative':
+        classification = 'ruim';
+        break;
+      default:
+        classification = 'neutra';
+    }
 
-    // Classificando com base no maior score
-    const classification = highestLabel.label === 'POS' ? 'boa' : highestLabel.label === 'NEG' ? 'ruim' : 'neutra';
+    console.log(`🎯 Título: "${title}", Classificação: ${classification} (${highestLabel.label})`);
 
-    // Armazena o resultado no cache
     cache.set(title, classification);
-
     return classification;
 
   } catch (error) {
-    console.error('Erro na classificação NLP:', error);
-    return 'neutra'; // Se der erro, considera como 'neutra'
+    console.error('🔥 Erro na classificação NLP:', error);
+    return 'neutra';
   }
 }
 
