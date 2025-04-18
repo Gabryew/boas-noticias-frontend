@@ -29,7 +29,7 @@ export default function Home() {
   const fetchNoticias = async (page) => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`/api/boas-noticias?page=${page}`);
+      const { data } = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?page=${page}`);
       const noticias = data.noticias; // Acessa a propriedade correta
       if (Array.isArray(noticias)) {
         if (noticias.length === 0) {
