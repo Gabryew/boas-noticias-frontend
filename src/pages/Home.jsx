@@ -25,12 +25,14 @@ export default function Home() {
     async function fetchNoticias() {
       try {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
-        console.log("Resposta da API:", response.data);  // Verifique o que está sendo retornado
-        const noticiasComTempo = response.data.noticias.map((noticia) => ({
-          ...noticia,
-          readingTime: calcularTempoLeitura(noticia.conteudo || noticia.summary),
-        }));
-        console.log("Notícias carregadas:", noticiasComTempo); // Log para depuração
+        console.log("Resposta da API:", response.data);
+        const noticiasComTempo = response.data.noticias.map((noticia) => {
+          console.log("Imagem da notícia:", noticia.image); // debug
+          return {
+            ...noticia,
+            readingTime: calcularTempoLeitura(noticia.conteudo || noticia.summary),
+          };
+        });
         setNoticias(noticiasComTempo);
       } catch (error) {
         console.error("Erro ao buscar notícias:", error);
@@ -38,10 +40,9 @@ export default function Home() {
         setLoading(false);
       }
     }
-  
+
     fetchNoticias();
   }, []);
-  
 
   const toggleSalvarNoticia = (noticia) => {
     const jaSalva = salvas.find((n) => n.link === noticia.link);
@@ -93,8 +94,8 @@ export default function Home() {
 
           return (
             <motion.div
-              key={index}
-              className="w-screen h-screen snap-start relative flex items-end justify-center cursor-pointer"
+              key={noticia.link}
+              className="w-screen h-screen snap-start relative flex items-end justify-center cursor-pointer border border-yellow-500"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
@@ -108,7 +109,7 @@ export default function Home() {
               }}
             >
               {/* Gradiente de fundo */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-0" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-10" />
 
               {/* Ícone de salvar */}
               <div className="absolute top-20 right-4 z-20">
@@ -129,8 +130,8 @@ export default function Home() {
               </div>
 
               {/* Conteúdo da notícia */}
-              <div className="relative z-10 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm">
-                <h1 className="text-3xl md:text-4xl font-extrabold leading-tight drop-shadow-lg">
+              <div className="relative z-20 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm">
+                <h1 className="text-3xl md:text-4xl font-extrabold leading-tight drop-shadow-lg text-white">
                   {noticia.title}
                 </h1>
                 <div className="text-sm text-gray-300 flex flex-col gap-1 font-light">
@@ -141,6 +142,13 @@ export default function Home() {
             </motion.div>
           );
         })
+      )}
+
+      {/* Debug - quantas notícias foram renderizadas */}
+      {!loading && noticias.length > 0 && (
+        <div className="fixed bottom-4 left-4 text-xs text-green-400 z-50">
+          Renderizando {noticias.length} notícias.
+        </div>
       )}
     </div>
   );
