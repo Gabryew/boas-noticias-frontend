@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import axios from "axios";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
@@ -29,7 +28,8 @@ export default function Home() {
   const fetchNoticias = async (page) => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?page=${page}`);
+      const response = await fetch(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?page=${page}`);
+      const data = await response.json();
       const noticias = data.noticias; // Acessa a propriedade correta
       if (Array.isArray(noticias)) {
         if (noticias.length === 0) {
