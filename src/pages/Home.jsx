@@ -18,22 +18,18 @@ export default function Home() {
     const local = localStorage.getItem("noticiasSalvas");
     return local ? JSON.parse(local) : [];
   });
+
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     async function fetchNoticias() {
       try {
-        const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
-        console.log("Resposta da API:", response.data);
-        const noticiasComTempo = response.data.noticias.map((noticia) => {
-          console.log("Notícia recebida:", noticia); // Adicione este log
-          console.log("Imagem da notícia:", noticia.image); // debug
-          return {
-            ...noticia,
-            readingTime: calcularTempoLeitura(noticia.content), // Corrigido para noticia.content
-          };
-        });
+        const response = await axios.get("/api/boas-noticias");
+        const noticiasComTempo = response.data.noticias.map((noticia) => ({
+          ...noticia,
+          readingTime: calcularTempoLeitura(noticia.content),
+        }));
         setNoticias(noticiasComTempo);
       } catch (error) {
         console.error("Erro ao buscar notícias:", error);
@@ -47,12 +43,10 @@ export default function Home() {
 
   const toggleSalvarNoticia = (noticia) => {
     const jaSalva = salvas.find((n) => n.link === noticia.link);
-    let atualizadas;
-    if (jaSalva) {
-      atualizadas = salvas.filter((n) => n.link !== noticia.link);
-    } else {
-      atualizadas = [...salvas, noticia];
-    }
+    const atualizadas = jaSalva
+      ? salvas.filter((n) => n.link !== noticia.link)
+      : [...salvas, noticia];
+
     setSalvas(atualizadas);
     localStorage.setItem("noticiasSalvas", JSON.stringify(atualizadas));
   };
@@ -85,6 +79,7 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Lista de notícias */}
       {noticias.length === 0 ? (
         <div className="flex items-center justify-center h-screen text-white">
           Nenhuma notícia encontrada.
@@ -102,19 +97,16 @@ export default function Home() {
               transition={{ duration: 0.8, delay: index * 0.1 }}
               onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
               style={{
-                backgroundImage: noticia.image ? `url(${noticia.image})` : 'none', // Use 'none' em vez de undefined
+                backgroundImage: noticia.image ? `url(${noticia.image})` : "none",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
               }}
             >
-              {/* Log para verificar a URL da imagem aplicada */}
-              {noticia.image && console.log(`Aplicando imagem de fundo: ${noticia.image}`)}
-
-              {/* Sobrepor a imagem com fundo escuro para visibilidade do texto */}
+              {/* Sobreposição escura para leitura do texto */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-10" />
 
-              {/* Ícone de salvar */}
+              {/* Botão de salvar */}
               <div className="absolute top-4 right-4 z-20">
                 <button
                   onClick={(e) => {
@@ -132,7 +124,7 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Título e fonte */}
+              {/* Informações da notícia */}
               <div className="absolute bottom-12 left-4 z-20 w-full px-6 py-4 text-left space-y-2 backdrop-blur-sm">
                 <h1 className="text-3xl font-extrabold leading-tight text-white drop-shadow-lg">
                   {noticia.title}
@@ -147,7 +139,7 @@ export default function Home() {
         })
       )}
 
-      {/* Debug - quantas notícias foram renderizadas */}
+      {/* Debug: quantas notícias renderizadas */}
       {!loading && noticias.length > 0 && (
         <div className="fixed bottom-4 left-4 text-xs text-green-400 z-50">
           Renderizando {noticias.length} notícias.

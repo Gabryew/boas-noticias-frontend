@@ -9,7 +9,6 @@ const FEEDS = [
   'https://feeds.bbci.co.uk/portuguese/rss.xml',
 ];
 
-// Cache simples para não classificar o mesmo título duas vezes
 const cache = new Map();
 
 function classificarNoticia(texto) {
@@ -34,17 +33,26 @@ function estimateReadingTime(content) {
   return Math.ceil(wordCount / wordsPerMinute);
 }
 
-function extractImageUrl(content) {
+function extractImageUrl(item) {
+  // Tenta extrair do conteúdo HTML
+  const htmlContent = item.content || item['content:encoded'] || '';
   const imgRegex = /<img[^>]+src=["']([^"']+)["']/;
-  const match = content.match(imgRegex);
-  return match ? match[1] : null;
+  const match = htmlContent.match(imgRegex);
+  if (match) return match[1];
+
+  // Verifica campos alternativos
+  if (item.enclosure?.url) return item.enclosure.url;
+  if (item['media:content']?.url) return item['media:content'].url;
+  if (item['media:thumbnail']?.url) return item['media:thumbnail'].url;
+  if (item.image?.url) return item.image.url;
+
+  return null;
 }
 
 export default async function handler(req, res) {
   try {
     const allNews = [];
 
-    // Loop para processar todos os feeds
     for (const feedUrl of FEEDS) {
       let feed;
       try {
@@ -54,25 +62,18 @@ export default async function handler(req, res) {
         continue;
       }
 
-      // Verificação de integridade do feed
       if (!feed || !feed.items || feed.items.length === 0) {
         console.warn(`O feed ${feedUrl} não contém itens válidos ou não é um RSS válido.`);
         continue;
       }
 
-      // Mapeando cada item de feed para o formato esperado
       const parsedNews = await Promise.all(
         feed.items.map(async (item) => {
           const title = item.title || '';
           const content = item.contentSnippet || item.content || '';
           const categoria = classificarNoticia(title + ' ' + content);
           const tempoLeitura = estimateReadingTime(content);
-
-          // Tentar obter a imagem do conteúdo HTML
-          let imageUrl = extractImageUrl(content);
-
-          console.log('Estrutura do item:', item); // Log para verificar a estrutura completa do item
-          console.log('Imagem do item:', imageUrl); // Log para verificar a URL da imagem
+          const imageUrl = extractImageUrl(item);
 
           return {
             title: title,
@@ -91,15 +92,12 @@ export default async function handler(req, res) {
       allNews.push(...parsedNews);
     }
 
-    // Filtrando apenas as notícias boas
     const boasNoticias = allNews.filter((n) => n.category === 'boa');
 
-    // Verificação para caso não haja notícias boas
     if (boasNoticias.length === 0) {
       return res.status(200).json({ message: 'Nenhuma notícia boa encontrada.' });
     }
 
-    // Enviando as notícias boas no formato esperado
     res.status(200).json({ noticias: boasNoticias });
   } catch (error) {
     console.error('Erro ao obter notícias:', error);
