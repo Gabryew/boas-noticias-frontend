@@ -95,7 +95,7 @@ export default function Home() {
           return (
             <motion.div
               key={noticia.link}
-              className="w-full md:w-96 mx-auto my-4 snap-start relative cursor-pointer"
+              className="w-full h-full snap-start relative cursor-pointer"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
@@ -105,12 +105,10 @@ export default function Home() {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
-                height: "300px",
-                borderRadius: "12px",
               }}
             >
-              {/* Conteúdo da notícia */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-10 rounded-xl" />
+              {/* Sobrepor a imagem com fundo escuro para visibilidade do texto */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-10" />
 
               {/* Ícone de salvar */}
               <div className="absolute top-4 right-4 z-20">
@@ -131,8 +129,8 @@ export default function Home() {
               </div>
 
               {/* Título e fonte */}
-              <div className="relative z-20 w-full px-6 py-4 text-left space-y-2 backdrop-blur-sm text-white">
-                <h1 className="text-2xl font-extrabold leading-tight drop-shadow-lg">
+              <div className="absolute bottom-12 left-4 z-20 w-full px-6 py-4 text-left space-y-2 backdrop-blur-sm">
+                <h1 className="text-3xl font-extrabold leading-tight text-white drop-shadow-lg">
                   {noticia.title}
                 </h1>
                 <div className="text-sm flex flex-col gap-1 font-light">
