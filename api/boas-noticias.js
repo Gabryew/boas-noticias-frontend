@@ -38,6 +38,7 @@ export default async function handler(req, res) {
   try {
     const allNews = [];
 
+    // Loop para processar todos os feeds
     for (const feedUrl of FEEDS) {
       let feed;
       try {
@@ -47,11 +48,13 @@ export default async function handler(req, res) {
         continue;
       }
 
+      // Verificação de integridade do feed
       if (!feed || !feed.items || feed.items.length === 0) {
         console.warn(`O feed ${feedUrl} não contém itens válidos ou não é um RSS válido.`);
         continue;
       }
 
+      // Mapeando cada item de feed para o formato esperado
       const parsedNews = await Promise.all(
         feed.items.map(async (item) => {
           const title = item.title || '';
@@ -60,15 +63,15 @@ export default async function handler(req, res) {
           const tempoLeitura = estimateReadingTime(content);
 
           return {
-            titulo: title,
-            conteudo: content,
+            title: title, // Alterado de "titulo" para "title"
+            content: content, // Alterado de "conteudo" para "content"
             link: item.link,
-            data: item.pubDate,
-            imagem: item.enclosure?.url || null,
-            autor: item.creator || item.author || 'Desconhecido',
-            veiculo: feed.title,
-            categoria,
-            tempoLeitura
+            date: item.pubDate, // Alterado de "data" para "date"
+            image: item.enclosure?.url || null, // Alterado de "imagem" para "image"
+            author: item.creator || item.author || 'Desconhecido', // Alterado de "autor" para "author"
+            source: feed.title, // Alterado de "veiculo" para "source"
+            category: categoria, // Alterado de "categoria" para "category"
+            readingTime: tempoLeitura // Alterado de "tempoLeitura" para "readingTime"
           };
         })
       );
@@ -76,12 +79,15 @@ export default async function handler(req, res) {
       allNews.push(...parsedNews);
     }
 
-    const boasNoticias = allNews.filter((n) => n.categoria === 'boa');
+    // Filtrando apenas as notícias boas
+    const boasNoticias = allNews.filter((n) => n.category === 'boa');
 
+    // Verificação para caso não haja notícias boas
     if (boasNoticias.length === 0) {
       return res.status(200).json({ message: 'Nenhuma notícia boa encontrada.' });
     }
 
+    // Enviando as notícias boas no formato esperado
     res.status(200).json({ noticias: boasNoticias });
   } catch (error) {
     console.error('Erro ao obter notícias:', error);
