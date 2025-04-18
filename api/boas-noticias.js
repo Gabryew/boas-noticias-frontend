@@ -61,8 +61,18 @@ export default async function handler(req, res) {
           const content = item.contentSnippet || item.content || '';
           const categoria = classificarNoticia(title + ' ' + content);
           const tempoLeitura = estimateReadingTime(content);
-          const imageUrl = item.enclosure?.url || null;
 
+          // Tentar obter a imagem de diferentes campos
+          let imageUrl = null;
+          if (item.enclosure && item.enclosure.url) {
+            imageUrl = item.enclosure.url;
+          } else if (item['media:content'] && item['media:content'].$.url) {
+            imageUrl = item['media:content'].$.url;
+          } else if (item['media:thumbnail'] && item['media:thumbnail'].$.url) {
+            imageUrl = item['media:thumbnail'].$.url;
+          }
+
+          console.log('Estrutura do item:', item); // Log para verificar a estrutura completa do item
           console.log('Imagem do item:', imageUrl); // Log para verificar a URL da imagem
 
           return {
