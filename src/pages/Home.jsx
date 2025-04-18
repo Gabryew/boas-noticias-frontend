@@ -29,13 +29,16 @@ export default function Home() {
   const fetchNoticias = async (page) => {
     setLoading(true);
     try {
-      const { data } = await axios.get(
-        `/api/boas-noticias?page=${page}`
-      );
-      if (data.length === 0) {
-        setHasMore(false);
+      const { data } = await axios.get(`/api/boas-noticias?page=${page}`);
+      if (Array.isArray(data)) {
+        if (data.length === 0) {
+          setHasMore(false);
+        } else {
+          setNoticias((prev) => [...prev, ...data]);
+        }
       } else {
-        setNoticias((prev) => [...prev, ...data]);
+        console.warn("Formato inesperado:", data);
+        setHasMore(false);
       }
     } catch (err) {
       console.error("Erro ao carregar notícias:", err);
@@ -69,7 +72,9 @@ export default function Home() {
     setFilters((prev) => ({ ...prev, [type]: !prev[type] }));
   };
 
-  const filteredNoticias = noticias.filter((n) => filters[n.classification]);
+  const filteredNoticias = noticias.filter(
+    (n) => filters[n.classification] === true
+  );
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 pt-20 px-4">
@@ -79,9 +84,13 @@ export default function Home() {
         <div className="flex space-x-3">
           {Object.keys(filters).map((key) => (
             <button key={key} onClick={() => toggleFilter(key)}>
-              <i className={
-                filters[key] ? FILTER_ICONS[key].filled : FILTER_ICONS[key].outline
-              }></i>
+              <i
+                className={
+                  filters[key]
+                    ? FILTER_ICONS[key].filled
+                    : FILTER_ICONS[key].outline
+                }
+              ></i>
             </button>
           ))}
         </div>
@@ -101,18 +110,40 @@ export default function Home() {
               transition={{ duration: 0.3 }}
             >
               {noticia.image && (
-                <img src={noticia.image} alt="" className="w-full h-48 object-cover" />
+                <img
+                  src={noticia.image}
+                  alt=""
+                  className="w-full h-48 object-cover"
+                />
               )}
               <div className="p-4">
-                <Link to={`/noticia/${encodeURIComponent(noticia.link)}`} className="text-lg font-semibold hover:underline">
+                <Link
+                  to={`/noticia/${encodeURIComponent(noticia.link)}`}
+                  className="text-lg font-semibold hover:underline"
+                >
                   {noticia.title}
                 </Link>
 
                 {/* Classificação */}
                 <div className="mt-1 text-sm">
-                  {noticia.classification === "boa" && <i className="bi bi-emoji-smile text-green-500"> Notícia boa</i>}
-                  {noticia.classification === "neutra" && <i className="bi bi-emoji-neutral text-yellow-400"> Notícia neutra</i>}
-                  {noticia.classification === "ruim" && <i className="bi bi-emoji-frown text-red-500"> Notícia ruim</i>}
+                  {noticia.classification === "boa" && (
+                    <i className="bi bi-emoji-smile text-green-500">
+                      {" "}
+                      Notícia boa
+                    </i>
+                  )}
+                  {noticia.classification === "neutra" && (
+                    <i className="bi bi-emoji-neutral text-yellow-400">
+                      {" "}
+                      Notícia neutra
+                    </i>
+                  )}
+                  {noticia.classification === "ruim" && (
+                    <i className="bi bi-emoji-frown text-red-500">
+                      {" "}
+                      Notícia ruim
+                    </i>
+                  )}
                 </div>
 
                 {/* Tempo de leitura */}
@@ -134,7 +165,10 @@ export default function Home() {
         {loading && (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="animate-pulse bg-zinc-100 dark:bg-zinc-800 p-4 rounded-2xl shadow-md">
+              <div
+                key={i}
+                className="animate-pulse bg-zinc-100 dark:bg-zinc-800 p-4 rounded-2xl shadow-md"
+              >
                 <div className="h-48 bg-zinc-300 dark:bg-zinc-700 rounded mb-4"></div>
                 <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-3/4 mb-2"></div>
                 <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/2"></div>
