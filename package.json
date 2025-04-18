@@ -28,6 +28,7 @@
     "react-spinners": "^0.15.0",
     "react-swipeable": "^7.0.2",
     "rss-parser": "^3.0.0",
+    "sentiment": "^5.0.2",
     "tailwindcss": "^3.4.17",
     "wink-sentiment": "^2.0.0"
   },

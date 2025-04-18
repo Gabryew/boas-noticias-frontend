@@ -1,129 +1,83 @@
 import Parser from 'rss-parser';
-import fetch from 'node-fetch';
-import dotenv from 'dotenv';
-dotenv.config();
+import Sentiment from 'sentiment';
 
 const parser = new Parser();
+const sentiment = new Sentiment();
+
 const FEEDS = [
   'https://g1.globo.com/rss/g1/',
   'https://feeds.bbci.co.uk/portuguese/rss.xml',
 ];
 
-// Cache para armazenar resultados de classificação e evitar chamadas repetidas
+// Cache simples para não classificar o mesmo título duas vezes
 const cache = new Map();
 
-async function classifyNews(title) {
-  if (cache.has(title)) {
-    console.log(`Resultado do cache para o título: "${title}"`);
-    return cache.get(title);
+function classificarNoticia(texto) {
+  if (cache.has(texto)) {
+    return cache.get(texto);
   }
 
-  try {
-    const response = await fetch('https://api-inference.huggingface.co/models/nlptown/bert-base-multilingual-uncased-sentiment', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ inputs: title }),
-    });
+  const resultado = sentiment.analyze(texto || "");
+  let classificacao;
 
-    const contentType = response.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      const errorText = await response.text();
-      console.error('❌ Resposta da Hugging Face não é JSON:', errorText);
-      return 'neutra';
-    }
+  if (resultado.score > 1) classificacao = 'boa';
+  else if (resultado.score < -1) classificacao = 'ruim';
+  else classificacao = 'neutra';
 
-    const result = await response.json();
-
-    if (!Array.isArray(result) || !result[0]) {
-      console.warn('⚠️ Resposta inesperada da Hugging Face:', result);
-      return 'neutra';
-    }
-
-    const labels = result[0];
-    const highestLabel = labels.reduce((prev, current) => (prev.score > current.score) ? prev : current);
-
-    const stars = parseInt(highestLabel.label[0]); // "4 stars" → 4
-    let classification;
-
-    if (stars >= 4) classification = 'boa';
-    else if (stars === 3) classification = 'neutra';
-    else classification = 'ruim';
-
-    console.log(`🌟 Título: "${title}" → ${stars} estrelas → ${classification}`);
-
-    cache.set(title, classification);
-    return classification;
-
-  } catch (error) {
-    console.error('🔥 Erro na classificação NLP:', error);
-    return 'neutra';
-  }
+  cache.set(texto, classificacao);
+  return classificacao;
 }
 
 function estimateReadingTime(content) {
-  const wordsPerMinute = 200;  // Média de palavras por minuto
-  const wordCount = content?.split(/\s+/).length || 0;  // Conta o número de palavras
-  return Math.ceil(wordCount / wordsPerMinute);  // Retorna o tempo de leitura arredondado para cima
+  const wordsPerMinute = 200;
+  const wordCount = content?.split(/\s+/).length || 0;
+  return Math.ceil(wordCount / wordsPerMinute);
 }
 
 export default async function handler(req, res) {
   try {
     const allNews = [];
 
-    // Tenta obter notícias de cada feed
     for (const feedUrl of FEEDS) {
       let feed;
       try {
         feed = await parser.parseURL(feedUrl);
       } catch (feedError) {
         console.error(`Erro ao processar o feed ${feedUrl}:`, feedError);
-        continue; // Se um feed falhar, tenta o próximo
+        continue;
       }
 
-      // Verifica se o feed tem itens válidos
       if (!feed || !feed.items || feed.items.length === 0) {
         console.warn(`O feed ${feedUrl} não contém itens válidos ou não é um RSS válido.`);
-        continue; // Se o feed não contiver itens válidos, pula ele
+        continue;
       }
 
-      // Processa cada item do feed em paralelo (melhora o tempo de execução)
       const parsedNews = await Promise.all(
         feed.items.map(async (item) => {
           const title = item.title || '';
-          const content = item.contentSnippet || item.content || '';  // Pega o conteúdo de texto
-          const categoria = await classifyNews(title); // Agora passamos apenas o título
+          const content = item.contentSnippet || item.content || '';
+          const categoria = classificarNoticia(title + ' ' + content);
           const tempoLeitura = estimateReadingTime(content);
-      
+
           return {
             titulo: title,
             conteudo: content,
             link: item.link,
             data: item.pubDate,
-            imagem: item.enclosure?.url || null,  // Pega a URL da imagem, se houver
-            autor: item.creator || item.author || 'Desconhecido',  // Autor da notícia
-            veiculo: feed.title,  // Veículo de mídia
+            imagem: item.enclosure?.url || null,
+            autor: item.creator || item.author || 'Desconhecido',
+            veiculo: feed.title,
             categoria,
             tempoLeitura
           };
         })
       );
 
-      allNews.push(...parsedNews);  // Adiciona as notícias do feed ao array principal
+      allNews.push(...parsedNews);
     }
 
-    // Verificando se a classificação das notícias está funcionando corretamente
-    console.log("Todas as notícias processadas:", allNews);
-
-    // Filtra apenas as notícias boas
     const boasNoticias = allNews.filter((n) => n.categoria === 'boa');
-    
-    // Verificando as boas notícias filtradas
-    console.log("Boas notícias filtradas:", boasNoticias);
 
-    // Responde com as boas notícias ou uma mensagem de erro se não houver nenhuma
     if (boasNoticias.length === 0) {
       return res.status(200).json({ message: 'Nenhuma notícia boa encontrada.' });
     }
