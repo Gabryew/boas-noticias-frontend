@@ -63,15 +63,15 @@ export default async function handler(req, res) {
           const tempoLeitura = estimateReadingTime(content);
 
           return {
-            title: title, // Alterado de "titulo" para "title"
-            content: content, // Alterado de "conteudo" para "content"
+            title: title,
+            content: content,
             link: item.link,
-            date: item.pubDate, // Alterado de "data" para "date"
-            image: item.enclosure?.url || null, // Alterado de "imagem" para "image"
-            author: item.creator || item.author || 'Desconhecido', // Alterado de "autor" para "author"
-            source: feed.title, // Alterado de "veiculo" para "source"
-            category: categoria, // Alterado de "categoria" para "category"
-            readingTime: tempoLeitura // Alterado de "tempoLeitura" para "readingTime"
+            date: item.pubDate,
+            image: item.enclosure?.url || null,
+            author: item.creator || item.author || 'Desconhecido',
+            source: feed.title,
+            category: categoria,
+            readingTime: tempoLeitura
           };
         })
       );

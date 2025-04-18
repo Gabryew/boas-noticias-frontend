@@ -27,10 +27,11 @@ export default function Home() {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         console.log("Resposta da API:", response.data);
         const noticiasComTempo = response.data.noticias.map((noticia) => {
+          console.log("Notícia recebida:", noticia); // Adicione este log
           console.log("Imagem da notícia:", noticia.image); // debug
           return {
             ...noticia,
-            readingTime: calcularTempoLeitura(noticia.conteudo || noticia.summary),
+            readingTime: calcularTempoLeitura(noticia.content), // Corrigido para noticia.content
           };
         });
         setNoticias(noticiasComTempo);
