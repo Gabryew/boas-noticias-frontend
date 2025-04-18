@@ -61,13 +61,16 @@ export default async function handler(req, res) {
           const content = item.contentSnippet || item.content || '';
           const categoria = classificarNoticia(title + ' ' + content);
           const tempoLeitura = estimateReadingTime(content);
+          const imageUrl = item.enclosure?.url || null;
+
+          console.log('Imagem do item:', imageUrl); // Log para verificar a URL da imagem
 
           return {
             title: title,
             content: content,
             link: item.link,
             date: item.pubDate,
-            image: item.enclosure?.url || null,
+            image: imageUrl,
             author: item.creator || item.author || 'Desconhecido',
             source: feed.title,
             category: categoria,

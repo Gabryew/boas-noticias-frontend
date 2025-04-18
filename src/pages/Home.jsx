@@ -102,7 +102,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: index * 0.1 }}
               onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
               style={{
-                backgroundImage: noticia.image ? `url(${noticia.image})` : undefined,
+                backgroundImage: noticia.image ? `url(${noticia.image})` : 'none', // Use 'none' em vez de undefined
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
