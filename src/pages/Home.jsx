@@ -30,6 +30,7 @@ export default function Home() {
     try {
       const response = await fetch(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?page=${page}`);
       const data = await response.json();
+      console.log("Dados recebidos da API:", data); // Log para verificar os dados recebidos
       const noticias = data.noticias; // Acessa a propriedade correta
       if (Array.isArray(noticias)) {
         if (noticias.length === 0) {
@@ -76,6 +77,8 @@ export default function Home() {
   const filteredNoticias = noticias.filter(
     (n) => filters[n.classification] === true
   );
+
+  console.log("Notícias filtradas:", filteredNoticias); // Log para verificar as notícias filtradas
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 pt-20 px-4">
