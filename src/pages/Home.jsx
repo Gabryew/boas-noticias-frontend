@@ -135,7 +135,7 @@ export default function Home() {
                   {noticia.title}
                 </h1>
                 <div className="text-sm text-gray-300 flex flex-col gap-1 font-light">
-                  {noticia.source && <span>{noticia.source}</span>}
+                  {noticia.source && <span>Fonte: {noticia.source}</span>}
                   {noticia.readingTime && <span>Tempo de leitura: {noticia.readingTime}</span>}
                 </div>
               </div>
