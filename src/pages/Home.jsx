@@ -95,7 +95,7 @@ export default function Home() {
           return (
             <motion.div
               key={noticia.link}
-              className="w-screen h-screen snap-start relative flex items-end justify-center cursor-pointer border border-yellow-500"
+              className="w-full md:w-96 mx-auto my-4 snap-start relative cursor-pointer"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
@@ -105,14 +105,15 @@ export default function Home() {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
-                backgroundColor: noticia.image ? "transparent" : "#111",
+                height: "300px",
+                borderRadius: "12px",
               }}
             >
-              {/* Gradiente de fundo */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-10" />
+              {/* Conteúdo da notícia */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-10 rounded-xl" />
 
               {/* Ícone de salvar */}
-              <div className="absolute top-20 right-4 z-20">
+              <div className="absolute top-4 right-4 z-20">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -129,14 +130,14 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Conteúdo da notícia */}
-              <div className="relative z-20 w-full px-6 py-12 text-left space-y-4 backdrop-blur-sm">
-                <h1 className="text-3xl md:text-4xl font-extrabold leading-tight drop-shadow-lg text-white">
+              {/* Título e fonte */}
+              <div className="relative z-20 w-full px-6 py-4 text-left space-y-2 backdrop-blur-sm text-white">
+                <h1 className="text-2xl font-extrabold leading-tight drop-shadow-lg">
                   {noticia.title}
                 </h1>
-                <div className="text-sm text-gray-300 flex flex-col gap-1 font-light">
+                <div className="text-sm flex flex-col gap-1 font-light">
                   {noticia.source && <span>Fonte: {noticia.source}</span>}
-                  {noticia.readingTime && <span>Tempo de leitura: {noticia.readingTime}</span>}
+                  {noticia.readingTime && <span>⏱️ Tempo de leitura: {noticia.readingTime}</span>}
                 </div>
               </div>
             </motion.div>
