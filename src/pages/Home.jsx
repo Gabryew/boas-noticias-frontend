@@ -105,10 +105,11 @@ export default function Home() {
   };
 
   const toggleFilter = (type) => {
-    setNoticias([]);
-    setPage(1);
-    setHasMore(true);
     setFilters((prev) => ({ ...prev, [type]: !prev[type] }));
+    setPage(1); // Reset page to 1 when filters change
+    setHasMore(true);
+    setNoticias([]); // Clear noticias when filters change
+    fetchNoticias(1); // Fetch noticias again with new filters
   };
 
   const filteredNoticias = noticias.filter(
