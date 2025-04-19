@@ -22,12 +22,12 @@ export default function Noticia() {
     async function fetchNoticia() {
       try {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
-        const noticiaEncontrada = response.data.find((n) => n.link === link);
+        const noticiaEncontrada = response.data.noticias.find((n) => n.link === link);
         if (noticiaEncontrada) {
           setNoticia(noticiaEncontrada);
           calcularTempoLeitura(noticiaEncontrada.summary);
 
-          const outras = response.data
+          const outras = response.data.noticias
             .filter((n) => n.link !== link)
             .sort(() => 0.5 - Math.random())
             .slice(0, 3);
@@ -157,7 +157,7 @@ export default function Noticia() {
         </div>
 
         <p className="text-sm text-gray-300">
-          <i className="bi bi-stopwatch"></i> Tempo de leitura: {tempoLeitura} mins
+          <i className="bi bi-stopwatch"></i> Tempo de leitura: {tempoLeitura} min
         </p>
 
         <div className="flex flex-col md:flex-row gap-4 pt-4 border-t border-white/10 mt-6">
@@ -177,7 +177,7 @@ export default function Noticia() {
           </button>
         </div>
 
-        <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
+        <div className="prose prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
           {noticia.summary
             .split("\n")
             .map((par, i) => <p key={i}>{par.trim()}</p>)}
