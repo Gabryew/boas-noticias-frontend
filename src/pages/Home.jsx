@@ -57,9 +57,9 @@ export default function Home() {
         readingTime: calcularTempoLeitura(noticia.content),
       }));
 
-      // Log para verificar a propriedade classification de cada notícia
+      // Log para verificar a propriedade category de cada notícia
       noticiasComTempo.forEach(noticia => {
-        console.log("Notícia classification:", noticia.classification);
+        console.log("Notícia category:", noticia.category);
       });
 
       setNoticias((prev) => [...prev, ...noticiasComTempo]);
@@ -107,7 +107,7 @@ export default function Home() {
   };
 
   const filteredNoticias = noticias.filter(
-    (n) => filters[n.classification] === true
+    (n) => filters[n.category] === true
   );
 
   console.log("Notícias filtradas:", filteredNoticias); // Log para verificar as notícias filtradas
@@ -207,8 +207,8 @@ export default function Home() {
                 </h1>
                 <div className="text-sm flex flex-col gap-1 font-light">
                   <div className="flex items-center gap-2">
-                    <i className={CLASSIFICATION_ICONS[noticia.classification]}></i>
-                    <span>{noticia.classification === "boa" ? "Notícia boa" : noticia.classification === "neutra" ? "Notícia neutra" : "Notícia ruim"}</span>
+                    <i className={CLASSIFICATION_ICONS[noticia.category]}></i>
+                    <span>{noticia.category === "boa" ? "Notícia boa" : noticia.category === "neutra" ? "Notícia neutra" : "Notícia ruim"}</span>
                   </div>
                   {noticia.source && <span>Fonte: {noticia.source}</span>}
                   {noticia.readingTime && (
