@@ -56,6 +56,9 @@ export default function Home() {
         readingTime: calcularTempoLeitura(noticia.content),
       }));
 
+      // Log para verificar as notícias retornadas
+      console.log("Notícias retornadas da API:", noticiasComTempo);
+
       // Verifica se a notícia já existe antes de adicionar
       setNoticias((prev) => {
         const existingLinks = new Set(prev.map(n => n.link));
@@ -109,6 +112,9 @@ export default function Home() {
   const filteredNoticias = noticias.filter(
     (n) => filters[n.category] === true
   );
+
+  // Log para verificar as notícias filtradas
+  console.log("Notícias filtradas:", filteredNoticias);
 
   if (loading && page === 1) {
     return (
