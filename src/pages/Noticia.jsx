@@ -23,6 +23,7 @@ export default function Noticia() {
       try {
         const response = await axios.get("https://boas-noticias-frontend.vercel.app/api/boas-noticias");
         const noticiaEncontrada = response.data.noticias.find((n) => n.link === link);
+
         if (noticiaEncontrada) {
           setNoticia(noticiaEncontrada);
           calcularTempoLeitura(noticiaEncontrada.summary || "");
@@ -51,8 +52,7 @@ export default function Noticia() {
   }, [link, navigate]);
 
   const calcularTempoLeitura = (texto) => {
-    if (!texto) return null;
-    const palavras = texto.trim().split(/\s+/).length;
+    const palavras = texto?.trim().split(/\s+/).length || 0;
     const minutos = Math.ceil(palavras / 200);
     setTempoLeitura(minutos);
   };
@@ -180,49 +180,35 @@ export default function Noticia() {
 
         <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
           {noticia.summary
-            .split("\n")
-            .map((par, i) => <p key={i}>{par.trim()}</p>)}
+            ? noticia.summary.split("\n").map((par, i) => <p key={i}>{par.trim()}</p>)
+            : <p>Resumo não disponível.</p>}
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 pt-4 border-t border-white/10 mt-6">
-          <button
-            onClick={() => navigate("/")}
-            className="bg-transparent hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto flex items-center justify-center gap-2"
-          >
-            <i className="bi bi-arrow-left"></i> Voltar
-          </button>
-
-          <a
-            href={noticia.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-transparent hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto text-center flex items-center justify-center gap-2"
-          >
-            <i className="bi bi-box-arrow-up-right"></i> Ler no site original
-          </a>
-        </div>
+        {outrasNoticias.length > 0 && (
+          <div className="pt-10 border-t border-white/10 mt-10">
+            <h2 className="text-2xl font-bold mb-4">Outras Notícias</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {outrasNoticias.map((outra, i) => (
+                <Link
+                  key={i}
+                  to={`/noticia/${encodeURIComponent(outra.link)}`}
+                  className="bg-white/5 hover:bg-white/10 p-4 rounded-xl transition block"
+                >
+                  {outra.image && (
+                    <div
+                      className="h-32 bg-cover bg-center mb-2 rounded-lg"
+                      style={{ backgroundImage: `url(${outra.image})` }}
+                    />
+                  )}
+                  <p className="text-sm text-gray-300 line-clamp-3">{outra.title}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {outrasNoticias.length > 0 && (
-        <div className="max-w-6xl mx-auto p-6 mt-12 space-y-6">
-          <h2 className="text-2xl font-bold">Outras notícias para você</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {outrasNoticias.map((outra, i) => (
-              <div
-                key={i}
-                onClick={() => navigate(`/noticia/${encodeURIComponent(outra.link)}`)}
-                className="cursor-pointer group"
-              >
-                <div
-                  className="h-40 bg-cover bg-center rounded-xl mb-2"
-                  style={{ backgroundImage: `url(${outra.image || "default-image.jpg"})` }}
-                />
-                <p className="group-hover:underline">{outra.title}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="fixed top-0 left-0 w-full h-1 bg-green-400 z-50" style={{ width: `${progresso}%` }} />
     </div>
   );
 }
