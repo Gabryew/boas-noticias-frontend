@@ -70,16 +70,27 @@ export default async function handler(req, res) {
       const parsedNews = await Promise.all(
         feed.items.map(async (item) => {
           const title = item.title || '';
-          const content = item.contentSnippet || item.content || '';
+      
+          const content =
+            item.contentSnippet ||
+            item.summary ||
+            item.description ||
+            item['content:encoded'] ||
+            item.content ||
+            '';
+      
           const categoria = classificarNoticia(title + ' ' + content);
           const tempoLeitura = estimateReadingTime(content);
           const imageUrl = extractImageUrl(item);
-
+      
+          const rawDate = item.pubDate || item.isoDate || '';
+          const date = rawDate ? new Date(rawDate).toISOString() : null;
+      
           return {
-            title: title,
-            content: content,
+            title,
+            content,
             link: item.link,
-            date: item.pubDate,
+            date,
             image: imageUrl,
             author: item.creator || item.author || 'Desconhecido',
             source: feed.title,
