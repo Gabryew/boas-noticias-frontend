@@ -51,6 +51,7 @@ export default function Home() {
     setLoading(true);
     try {
       const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?page=${page}`);
+      console.log("API Response:", response.data); // Log para verificar a resposta da API
       const noticiasComTempo = response.data.noticias.map((noticia) => ({
         ...noticia,
         readingTime: calcularTempoLeitura(noticia.content),
@@ -102,6 +103,8 @@ export default function Home() {
   const filteredNoticias = noticias.filter(
     (n) => filters[n.classification] === true
   );
+
+  console.log("Notícias filtradas:", filteredNoticias); // Log para verificar as notícias filtradas
 
   if (loading && page === 1) {
     return (
