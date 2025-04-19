@@ -51,6 +51,7 @@ export default function Noticia() {
   }, [link, navigate]);
 
   const calcularTempoLeitura = (texto) => {
+    if (!texto) return null;
     const palavras = texto.trim().split(/\s+/).length;
     const minutos = Math.ceil(palavras / 200);
     setTempoLeitura(minutos);
