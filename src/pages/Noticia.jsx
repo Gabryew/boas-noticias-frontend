@@ -25,7 +25,7 @@ export default function Noticia() {
         const noticiaEncontrada = response.data.noticias.find((n) => n.link === link);
         if (noticiaEncontrada) {
           setNoticia(noticiaEncontrada);
-          calcularTempoLeitura(noticiaEncontrada.summary);
+          calcularTempoLeitura(noticiaEncontrada.summary || "");
 
           const outras = response.data.noticias
             .filter((n) => n.link !== link)
@@ -51,7 +51,7 @@ export default function Noticia() {
   }, [link, navigate]);
 
   const calcularTempoLeitura = (texto) => {
-    const palavras = texto.split(/\s+/).length;
+    const palavras = texto.trim().split(/\s+/).length;
     const minutos = Math.ceil(palavras / 200);
     setTempoLeitura(minutos);
   };
@@ -148,7 +148,7 @@ export default function Noticia() {
 
       <div className="max-w-3xl mx-auto p-6 space-y-6">
         <div className="space-y-1">
-          <h1 className="text-3xl md:text-4xl font-bold leading-tight">{noticia.title}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold leading-tight text-white drop-shadow-lg">{noticia.title}</h1>
           <div className="text-sm text-gray-400 flex gap-4 flex-wrap">
             <span>{new Date(noticia.pubDate).toLocaleDateString()}</span>
             {noticia.author && <span>Por {noticia.author}</span>}
@@ -177,7 +177,7 @@ export default function Noticia() {
           </button>
         </div>
 
-        <div className="prose prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
+        <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
           {noticia.summary
             .split("\n")
             .map((par, i) => <p key={i}>{par.trim()}</p>)}
@@ -197,7 +197,7 @@ export default function Noticia() {
             rel="noopener noreferrer"
             className="bg-transparent hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto text-center flex items-center justify-center gap-2"
           >
-            <i className="bi bi-book"></i> Ler no site original
+            <i className="bi bi-box-arrow-up-right"></i> Ler no site original
           </a>
         </div>
       </div>
