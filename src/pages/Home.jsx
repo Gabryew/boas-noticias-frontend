@@ -56,6 +56,7 @@ export default function Home() {
         ...noticia,
         readingTime: calcularTempoLeitura(noticia.content),
       }));
+      console.log("Notícias com tempo de leitura:", noticiasComTempo); // Log para verificar as notícias processadas
       setNoticias((prev) => [...prev, ...noticiasComTempo]);
       setHasMore(noticiasComTempo.length > 0);
     } catch (error) {
