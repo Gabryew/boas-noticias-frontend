@@ -92,13 +92,8 @@ export default async function handler(req, res) {
       allNews.push(...parsedNews);
     }
 
-    const boasNoticias = allNews.filter((n) => n.category === 'boa');
-
-    if (boasNoticias.length === 0) {
-      return res.status(200).json({ message: 'Nenhuma notícia boa encontrada.' });
-    }
-
-    res.status(200).json({ noticias: boasNoticias });
+    // Retorna todas as notícias, independentemente da categoria
+    res.status(200).json({ noticias: allNews });
   } catch (error) {
     console.error('Erro ao obter notícias:', error);
     res.status(500).json({ error: 'Erro ao obter notícias' });

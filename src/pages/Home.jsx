@@ -51,18 +51,18 @@ export default function Home() {
     setLoading(true);
     try {
       const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?page=${page}`);
-      console.log("API Response:", response.data); // Log para verificar a resposta da API
       const noticiasComTempo = response.data.noticias.map((noticia) => ({
         ...noticia,
         readingTime: calcularTempoLeitura(noticia.content),
       }));
 
-      // Log para verificar a propriedade category de cada notícia
-      noticiasComTempo.forEach(noticia => {
-        console.log("Notícia category:", noticia.category);
+      // Verifica se a notícia já existe antes de adicionar
+      setNoticias((prev) => {
+        const existingLinks = new Set(prev.map(n => n.link));
+        const newNoticias = noticiasComTempo.filter(n => !existingLinks.has(n.link));
+        return [...prev, ...newNoticias];
       });
 
-      setNoticias((prev) => [...prev, ...noticiasComTempo]);
       setHasMore(noticiasComTempo.length > 0);
     } catch (error) {
       console.error("Erro ao buscar notícias:", error);
@@ -109,8 +109,6 @@ export default function Home() {
   const filteredNoticias = noticias.filter(
     (n) => filters[n.category] === true
   );
-
-  console.log("Notícias filtradas:", filteredNoticias); // Log para verificar as notícias filtradas
 
   if (loading && page === 1) {
     return (
