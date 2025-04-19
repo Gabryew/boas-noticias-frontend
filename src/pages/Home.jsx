@@ -56,11 +56,6 @@ export default function Home() {
         readingTime: calcularTempoLeitura(noticia.content),
       }));
 
-      // Log para verificar as classificações das notícias
-      noticiasComTempo.forEach(noticia => {
-        console.log("Notícia classificação:", noticia.category);
-      });
-
       // Verifica se a notícia já existe antes de adicionar
       setNoticias((prev) => {
         const existingLinks = new Set(prev.map(n => n.link));
@@ -116,9 +111,6 @@ export default function Home() {
     (n) => filters[n.category] === true
   );
 
-  // Log para verificar as notícias filtradas
-  console.log("Notícias filtradas:", filteredNoticias);
-
   if (loading && page === 1) {
     return (
       <div className="flex items-center justify-center h-screen bg-black">
@@ -163,7 +155,7 @@ export default function Home() {
       {/* Lista de notícias */}
       {filteredNoticias.length === 0 ? (
         <div className="flex items-center justify-center h-screen text-white">
-          Nenhuma notícia encontrada.
+          {loading ? "Carregando..." : "Nenhuma notícia encontrada."}
         </div>
       ) : (
         filteredNoticias.map((noticia, index) => {
@@ -243,6 +235,13 @@ export default function Home() {
               <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/2"></div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Mensagem de fim de conteúdo */}
+      {!hasMore && !loading && (
+        <div className="flex items-center justify-center h-screen text-white">
+          Não há mais notícias para carregar.
         </div>
       )}
     </div>
