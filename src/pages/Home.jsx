@@ -56,8 +56,10 @@ export default function Home() {
         readingTime: calcularTempoLeitura(noticia.content),
       }));
 
-      // Log para verificar as notícias retornadas
-      console.log("Notícias retornadas da API:", noticiasComTempo);
+      // Log para verificar as classificações das notícias
+      noticiasComTempo.forEach(noticia => {
+        console.log("Notícia classificação:", noticia.category);
+      });
 
       // Verifica se a notícia já existe antes de adicionar
       setNoticias((prev) => {
