@@ -47,7 +47,9 @@ export default function Home() {
   });
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [filters, setFilters] = useState({ boa: true, neutra: false, ruim: false });
+  const [filters, setFilters] = useState({ boa: true, neutra: true, ruim: true });
+  const [sourceFilters, setSourceFilters] = useState({ "G1": true, "BBC": true });
+  const [showSourceMenu, setShowSourceMenu] = useState(false);
   const observer = useRef();
 
   const navigate = useNavigate();
@@ -62,8 +64,7 @@ export default function Home() {
         readingTime: calcularTempoLeitura(noticia.content),
       }));
 
-      console.log('Notícias recebidas da API:', noticiasComTempo);
-
+      // Verifica se a notícia já existe antes de adicionar
       setNoticias((prev) => {
         const existingLinks = new Set(prev.map(n => n.link));
         const newNoticias = noticiasComTempo.filter(n => !existingLinks.has(n.link));
@@ -114,12 +115,17 @@ export default function Home() {
     fetchNoticias(1); // Fetch noticias again with new filters
   };
 
-  const filteredNoticias = noticias.filter(
-    (n) => filters[n.category.toLowerCase()]
-  );
+  const toggleSourceFilter = (source) => {
+    setSourceFilters((prev) => ({ ...prev, [source]: !prev[source] }));
+    setPage(1); // Reset page to 1 when source filters change
+    setHasMore(true);
+    setNoticias([]); // Clear noticias when source filters change
+    fetchNoticias(1); // Fetch noticias again with new source filters
+  };
 
-  console.log('Filtros de categoria:', filters);
-  console.log('Notícias filtradas:', filteredNoticias);
+  const filteredNoticias = noticias.filter(
+    (n) => filters[n.category] && sourceFilters[n.source]
+  );
 
   if (loading && page === 1) {
     return (
@@ -131,7 +137,7 @@ export default function Home() {
 
   return (
     <div className="w-screen h-screen flex flex-col overflow-y-scroll bg-black text-white">
-      {/* Menu superior esquerdo */}
+      {/* Menu superior centralizado */}
       <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
         <div className="flex space-x-6">
           <Link
