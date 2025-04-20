@@ -170,7 +170,7 @@ export default function Home() {
       </div>
 
       {/* Lista de notícias */}
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col">
         {filteredNoticias.length === 0 ? (
           <div className="flex items-center justify-center h-full text-white">
             {loading ? "Carregando..." : "Nenhuma notícia encontrada."}
@@ -184,7 +184,7 @@ export default function Home() {
               <motion.div
                 key={noticia.link}
                 ref={isLast ? lastNoticiaRef : null}
-                className="w-full h-full snap-start relative cursor-pointer"
+                className="flex-1 relative cursor-pointer snap-start"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
@@ -195,6 +195,7 @@ export default function Home() {
                   backgroundPosition: "center",
                   backgroundRepeat: "no-repeat",
                   backgroundColor: noticia.image ? "transparent" : SOURCE_COLORS[noticia.category],
+                  height: "100vh", // Ensure each news item takes the full viewport height
                 }}
               >
                 {/* Sobreposição escura para leitura do texto */}
@@ -249,6 +250,7 @@ export default function Home() {
             <div
               key={i}
               className="animate-pulse bg-zinc-100 dark:bg-zinc-800 p-4 rounded-2xl shadow-md"
+              style={{ height: "100vh" }} // Ensure skeleton loader takes full viewport height
             >
               <div className="h-48 bg-zinc-300 dark:bg-zinc-700 rounded mb-4"></div>
               <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-3/4 mb-2"></div>
