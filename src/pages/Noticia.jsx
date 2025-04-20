@@ -152,7 +152,7 @@ export default function Noticia() {
           <h1 className="text-3xl md:text-4xl font-bold leading-tight text-white drop-shadow-lg">{noticia.title}</h1>
           <div className="text-sm text-gray-400 flex gap-4 flex-wrap">
             <span>{new Date(noticia.date).toLocaleDateString('pt-BR')}</span>
-            {noticia.author && <span>Por {noticia.author}</span>}
+            {noticia.author && noticia.author !== 'Desconhecido' && <span>Por {noticia.author}</span>}
             {noticia.source && <span>Fonte: {noticia.source}</span>}
           </div>
         </div>
@@ -176,6 +176,15 @@ export default function Noticia() {
             <i className={`bi ${noticiaSalva ? "bi-bookmark-heart-fill" : "bi-bookmark-heart"} text-lg`}></i>
             {noticiaSalva ? "Salvo" : "Salvar"}
           </button>
+
+          <a
+            href={noticia.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-transparent hover:bg-gray-700 text-white px-6 py-3 rounded-xl font-semibold transition w-full md:w-auto flex items-center justify-center gap-2"
+          >
+            <i className="bi bi-newspaper text-lg"></i> Ler no site original
+          </a>
         </div>
 
         <div className="prose prose-invert prose-p:leading-relaxed prose-p:mb-4 max-w-none text-lg">
