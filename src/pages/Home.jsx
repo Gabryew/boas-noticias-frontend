@@ -125,7 +125,7 @@ export default function Home() {
   };
 
   const filteredNoticias = noticias.filter(
-    (n) => sourceFilters[n.source] && filters[n.category]
+    (n) => sourceFilters[n.source.toLowerCase()] && filters[n.category.toLowerCase()]
   );
 
   console.log('Filtros de fonte:', sourceFilters);
