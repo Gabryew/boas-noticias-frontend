@@ -138,7 +138,7 @@ export default function Home() {
             to="/"
             className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
           >
-            <i className="bi bi-house-fill"></i>
+            <i className="bi bi-house"></i>
             <span>Início</span>
           </Link>
           <Link
