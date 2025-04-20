@@ -47,9 +47,7 @@ export default function Home() {
   });
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [filters, setFilters] = useState({ boa: true, neutra: true, ruim: true });
-  const [sourceFilters, setSourceFilters] = useState({ "G1": true, "BBC": true });
-  const [showSourceMenu, setShowSourceMenu] = useState(false);
+  const [filters, setFilters] = useState({ boa: true, neutra: false, ruim: false });
   const observer = useRef();
 
   const navigate = useNavigate();
@@ -64,7 +62,8 @@ export default function Home() {
         readingTime: calcularTempoLeitura(noticia.content),
       }));
 
-      // Verifica se a notícia já existe antes de adicionar
+      console.log('Notícias recebidas da API:', noticiasComTempo);
+
       setNoticias((prev) => {
         const existingLinks = new Set(prev.map(n => n.link));
         const newNoticias = noticiasComTempo.filter(n => !existingLinks.has(n.link));
@@ -115,17 +114,12 @@ export default function Home() {
     fetchNoticias(1); // Fetch noticias again with new filters
   };
 
-  const toggleSourceFilter = (source) => {
-    setSourceFilters((prev) => ({ ...prev, [source]: !prev[source] }));
-    setPage(1); // Reset page to 1 when source filters change
-    setHasMore(true);
-    setNoticias([]); // Clear noticias when source filters change
-    fetchNoticias(1); // Fetch noticias again with new source filters
-  };
-
   const filteredNoticias = noticias.filter(
-    (n) => filters[n.category] && sourceFilters[n.source]
+    (n) => filters[n.category.toLowerCase()]
   );
+
+  console.log('Filtros de categoria:', filters);
+  console.log('Notícias filtradas:', filteredNoticias);
 
   if (loading && page === 1) {
     return (
@@ -137,7 +131,7 @@ export default function Home() {
 
   return (
     <div className="w-screen h-screen flex flex-col overflow-y-scroll bg-black text-white">
-      {/* Menu superior centralizado */}
+      {/* Menu superior esquerdo */}
       <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
         <div className="flex space-x-6">
           <Link
@@ -176,7 +170,7 @@ export default function Home() {
       </div>
 
       {/* Lista de notícias */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1">
         {filteredNoticias.length === 0 ? (
           <div className="flex items-center justify-center h-full text-white">
             {loading ? "Carregando..." : "Nenhuma notícia encontrada."}
@@ -190,7 +184,7 @@ export default function Home() {
               <motion.div
                 key={noticia.link}
                 ref={isLast ? lastNoticiaRef : null}
-                className="flex-1 relative cursor-pointer snap-start"
+                className="w-full h-full snap-start relative cursor-pointer"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
@@ -201,7 +195,6 @@ export default function Home() {
                   backgroundPosition: "center",
                   backgroundRepeat: "no-repeat",
                   backgroundColor: noticia.image ? "transparent" : SOURCE_COLORS[noticia.category],
-                  height: "100vh", // Ensure each news item takes the full viewport height
                 }}
               >
                 {/* Sobreposição escura para leitura do texto */}
@@ -256,7 +249,6 @@ export default function Home() {
             <div
               key={i}
               className="animate-pulse bg-zinc-100 dark:bg-zinc-800 p-4 rounded-2xl shadow-md"
-              style={{ height: "100vh" }} // Ensure skeleton loader takes full viewport height
             >
               <div className="h-48 bg-zinc-300 dark:bg-zinc-700 rounded mb-4"></div>
               <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-3/4 mb-2"></div>
