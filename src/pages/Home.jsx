@@ -123,12 +123,13 @@ export default function Home() {
     setNoticias([]); // Clear noticias when source filters change
     fetchNoticias(1); // Fetch noticias again with new source filters
   };
-  
 
   const filteredNoticias = noticias.filter(
     (n) => sourceFilters[n.source] && filters[n.category]
-  );  
+  );
 
+  console.log('Filtros de fonte:', sourceFilters);
+  console.log('Filtros de categoria:', filters);
   console.log('Notícias filtradas:', filteredNoticias);
 
   if (loading && page === 1) {
