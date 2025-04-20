@@ -47,8 +47,8 @@ export default function Home() {
   });
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [filters, setFilters] = useState({ boa: true, neutra: true, ruim: true }); // Mostrar todas as categorias inicialmente
-  const [sourceFilters, setSourceFilters] = useState({});
+  const [filters, setFilters] = useState({ boa: true, neutra: true, ruim: true });
+  const [sourceFilters, setSourceFilters] = useState({ "G1": true, "BBC": true });
   const [showSourceMenu, setShowSourceMenu] = useState(false);
   const observer = useRef();
 
@@ -82,15 +82,6 @@ export default function Home() {
   useEffect(() => {
     fetchNoticias(page);
   }, [page]);
-
-  useEffect(() => {
-    // Initialize source filters with all sources checked
-    const allSources = ["G1", "BBC"]; // Add all your sources here
-    setSourceFilters(allSources.reduce((acc, source) => {
-      acc[source] = true;
-      return acc;
-    }, {}));
-  }, []);
 
   const lastNoticiaRef = useCallback(
     (node) => {
@@ -145,24 +136,10 @@ export default function Home() {
   }
 
   return (
-    <div className="w-screen h-screen overflow-y-scroll snap-y snap-mandatory bg-black text-white">
-      {/* Menu superior */}
-      <div className="flex justify-between items-center px-4 py-6 bg-black/80 sticky top-0 z-50 backdrop-blur">
-        <div className="flex gap-6 text-lg font-semibold">
-          <Link
-            to="/"
-            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
-          >
-            <i className="bi bi-house-fill"></i> Início
-          </Link>
-          <Link
-            to="/noticias-salvas"
-            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
-          >
-            <i className="bi bi-bookmarks"></i> Salvas
-          </Link>
-        </div>
-        <div className="flex space-x-3 items-center">
+    <div className="w-screen h-screen flex flex-col overflow-y-scroll bg-black text-white">
+      {/* Menu superior centralizado */}
+      <div className="flex justify-center items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
+        <div className="flex space-x-6">
           {Object.keys(filters).map((key) => (
             <div key={key} className="flex flex-col items-center">
               <button onClick={() => toggleFilter(key)}>
@@ -179,97 +156,123 @@ export default function Home() {
               </span>
             </div>
           ))}
-          <div className="relative">
-            <button onClick={() => setShowSourceMenu(!showSourceMenu)} className="flex flex-col items-center">
-              <i className="bi bi-list-check text-white"></i>
-              <span className="text-xs mt-1">Fontes</span>
-            </button>
-            {showSourceMenu && (
-              <div className="absolute right-0 mt-2 bg-white text-black rounded shadow-lg z-50">
-                {Object.keys(sourceFilters).map((source) => (
-                  <div key={source} className="flex items-center px-4 py-2 hover:bg-gray-200">
-                    <button onClick={() => toggleSourceFilter(source)}>
-                      <i className={sourceFilters[source] ? "bi bi-check-circle-fill text-green-500" : "bi bi-check-circle text-gray-500"}></i>
-                    </button>
-                    <span className="ml-2">{source}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        </div>
+      </div>
+
+      {/* Filtro de Fontes no canto superior direito */}
+      <div className="absolute top-0 right-0 flex items-center px-4 py-3 bg-black/80 z-50">
+        <div className="relative">
+          <button onClick={() => setShowSourceMenu(!showSourceMenu)} className="flex flex-col items-center">
+            <i className="bi bi-list-check text-white"></i>
+            <span className="text-xs mt-1">Fontes</span>
+          </button>
+          {showSourceMenu && (
+            <div className="absolute right-0 mt-2 bg-white text-black rounded shadow-lg z-50">
+              {Object.keys(sourceFilters).map((source) => (
+                <div key={source} className="flex items-center px-4 py-2 hover:bg-gray-200">
+                  <button onClick={() => toggleSourceFilter(source)}>
+                    <i className={sourceFilters[source] ? "bi bi-check-circle-fill text-green-500" : "bi bi-check-circle text-gray-500"}></i>
+                  </button>
+                  <span className="ml-2">{source}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Lista de notícias */}
-      {filteredNoticias.length === 0 ? (
-        <div className="flex items-center justify-center h-screen text-white">
-          {loading ? "Carregando..." : "Nenhuma notícia encontrada."}
-        </div>
-      ) : (
-        filteredNoticias.map((noticia, index) => {
-          const isLast = index === filteredNoticias.length - 1;
-          const salva = salvas.find((n) => n.link === noticia.link);
+      <div className="flex-1">
+        {filteredNoticias.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-white">
+            {loading ? "Carregando..." : "Nenhuma notícia encontrada."}
+          </div>
+        ) : (
+          filteredNoticias.map((noticia, index) => {
+            const isLast = index === filteredNoticias.length - 1;
+            const salva = salvas.find((n) => n.link === noticia.link);
 
-          return (
-            <motion.div
-              key={noticia.link}
-              ref={isLast ? lastNoticiaRef : null}
-              className="w-full h-full snap-start relative cursor-pointer"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: index * 0.1 }}
-              onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
-              style={{
-                backgroundImage: noticia.image ? `url(${noticia.image})` : "none",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
-                backgroundColor: noticia.image ? "transparent" : SOURCE_COLORS[noticia.category],
-              }}
-            >
-              {/* Sobreposição escura para leitura do texto */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10" />
+            return (
+              <motion.div
+                key={noticia.link}
+                ref={isLast ? lastNoticiaRef : null}
+                className="w-full h-full snap-start relative cursor-pointer"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
+                onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
+                style={{
+                  backgroundImage: noticia.image ? `url(${noticia.image})` : "none",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                  backgroundColor: noticia.image ? "transparent" : SOURCE_COLORS[noticia.category],
+                }}
+              >
+                {/* Sobreposição escura para leitura do texto */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10" />
 
-              {/* Botão de salvar */}
-              <div className="absolute top-16 right-4 z-20">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleSalvarNoticia(noticia);
-                  }}
-                  aria-label={salva ? "Remover dos favoritos" : "Salvar nos favoritos"}
-                  className="text-white text-4xl hover:scale-110 transition-transform drop-shadow-lg"
-                >
-                  {salva ? (
-                    <i className="bi bi-bookmark-heart-fill text-red-500"></i>
-                  ) : (
-                    <i className="bi bi-bookmark-heart"></i>
-                  )}
-                </button>
-              </div>
-
-              {/* Informações da notícia */}
-              <div className="absolute bottom-12 left-4 z-20 w-full px-6 py-4 text-left space-y-2 backdrop-blur-sm">
-                <h1 className="text-3xl font-extrabold leading-tight text-white drop-shadow-lg">
-                  {noticia.title}
-                </h1>
-                <div className="text-sm flex flex-col gap-1 font-light">
-                  <div className="flex items-center gap-2">
-                    <i className={CLASSIFICATION_ICONS[noticia.category]}></i>
-                    <span>{noticia.category === "boa" ? "Notícia boa" : noticia.category === "neutra" ? "Notícia neutra" : "Notícia ruim"}</span>
-                  </div>
-                  {noticia.source && <span>Fonte: {noticia.source}</span>}
-                  {noticia.readingTime && (
-                    <span>
-                      <i className="bi bi-stopwatch"></i> Tempo de leitura: {noticia.readingTime}
-                    </span>
-                  )}
+                {/* Botão de salvar */}
+                <div className="absolute top-16 right-4 z-20">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSalvarNoticia(noticia);
+                    }}
+                    aria-label={salva ? "Remover dos favoritos" : "Salvar nos favoritos"}
+                    className="text-white text-4xl hover:scale-110 transition-transform drop-shadow-lg"
+                  >
+                    {salva ? (
+                      <i className="bi bi-bookmark-heart-fill text-red-500"></i>
+                    ) : (
+                      <i className="bi bi-bookmark-heart"></i>
+                    )}
+                  </button>
                 </div>
-              </div>
-            </motion.div>
-          );
-        })
-      )}
+
+                {/* Informações da notícia */}
+                <div className="absolute bottom-12 left-4 z-20 w-full px-6 py-4 text-left space-y-2 backdrop-blur-sm">
+                  <h1 className="text-3xl font-extrabold leading-tight text-white drop-shadow-lg">
+                    {noticia.title}
+                  </h1>
+                  <div className="text-sm flex flex-col gap-1 font-light">
+                    <div className="flex items-center gap-2">
+                      <i className={CLASSIFICATION_ICONS[noticia.category]}></i>
+                      <span>{noticia.category === "boa" ? "Notícia boa" : noticia.category === "neutra" ? "Notícia neutra" : "Notícia ruim"}</span>
+                    </div>
+                    {noticia.source && <span>Fonte: {noticia.source}</span>}
+                    {noticia.readingTime && (
+                      <span>
+                        <i className="bi bi-stopwatch"></i> Tempo de leitura: {noticia.readingTime}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Menu inferior */}
+      <div className="flex justify-center items-center px-4 py-3 bg-black/80 sticky bottom-0 z-50 backdrop-blur">
+        <div className="flex gap-6 text-lg font-semibold">
+          <Link
+            to="/"
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
+          >
+            <i className="bi bi-house-fill"></i>
+            <span>Início</span>
+          </Link>
+          <Link
+            to="/noticias-salvas"
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
+          >
+            <i className="bi bi-bookmarks"></i>
+            <span>Salvas</span>
+          </Link>
+        </div>
+      </div>
 
       {/* Skeleton loader */}
       {loading && (
