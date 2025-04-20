@@ -125,11 +125,9 @@ export default function Home() {
   };
   
 
-  const filteredNoticias = noticias.filter((n) => {
-    const sourceKey = n.source?.toLowerCase();
-    const categoryKey = n.category?.toLowerCase();
-    return sourceFilters[sourceKey] && filters[categoryKey];
-  });
+  const filteredNoticias = noticias.filter(
+    (n) => sourceFilters[n.source] && filters[n.category]
+  );  
 
   console.log('Notícias filtradas:', filteredNoticias);
 
