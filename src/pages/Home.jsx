@@ -47,7 +47,7 @@ export default function Home() {
   });
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [filters, setFilters] = useState({ boa: true, neutra: false, ruim: false });
+  const [filters, setFilters] = useState({ boa: true, neutra: true, ruim: true }); // Mostrar todas as categorias inicialmente
   const [sourceFilters, setSourceFilters] = useState({});
   const [showSourceMenu, setShowSourceMenu] = useState(false);
   const observer = useRef();
