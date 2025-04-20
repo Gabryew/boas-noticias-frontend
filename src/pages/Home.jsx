@@ -48,8 +48,6 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [filters, setFilters] = useState({ boa: true, neutra: false, ruim: false });
-  const [sourceFilters, setSourceFilters] = useState({ "G1": true, "BBC": true });
-  const [showSourceMenu, setShowSourceMenu] = useState(false);
   const observer = useRef();
 
   const navigate = useNavigate();
@@ -116,19 +114,10 @@ export default function Home() {
     fetchNoticias(1); // Fetch noticias again with new filters
   };
 
-  const toggleSourceFilter = (source) => {
-    setSourceFilters((prev) => ({ ...prev, [source]: !prev[source] }));
-    setPage(1); // Reset page to 1 when source filters change
-    setHasMore(true);
-    setNoticias([]); // Clear noticias when source filters change
-    fetchNoticias(1); // Fetch noticias again with new source filters
-  };
-
   const filteredNoticias = noticias.filter(
-    (n) => sourceFilters[n.source.toLowerCase()] && filters[n.category.toLowerCase()]
+    (n) => filters[n.category.toLowerCase()]
   );
 
-  console.log('Filtros de fonte:', sourceFilters);
   console.log('Filtros de categoria:', filters);
   console.log('Notícias filtradas:', filteredNoticias);
 
@@ -142,8 +131,24 @@ export default function Home() {
 
   return (
     <div className="w-screen h-screen flex flex-col overflow-y-scroll bg-black text-white">
-      {/* Menu superior centralizado */}
-      <div className="flex justify-center items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
+      {/* Menu superior esquerdo */}
+      <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
+        <div className="flex space-x-6">
+          <Link
+            to="/"
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
+          >
+            <i className="bi bi-house-fill"></i>
+            <span>Início</span>
+          </Link>
+          <Link
+            to="/noticias-salvas"
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
+          >
+            <i className="bi bi-bookmarks"></i>
+            <span>Salvas</span>
+          </Link>
+        </div>
         <div className="flex space-x-6">
           {Object.keys(filters).map((key) => (
             <div key={key} className="flex flex-col items-center">
@@ -161,28 +166,6 @@ export default function Home() {
               </span>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Filtro de Fontes no canto superior direito */}
-      <div className="absolute top-0 right-0 flex items-center px-4 py-3 bg-black/80 z-50">
-        <div className="relative">
-          <button onClick={() => setShowSourceMenu(!showSourceMenu)} className="flex flex-col items-center">
-            <i className="bi bi-list-check text-white"></i>
-            <span className="text-xs mt-1">Fontes</span>
-          </button>
-          {showSourceMenu && (
-            <div className="absolute right-0 mt-2 bg-white text-black rounded shadow-lg z-50">
-              {Object.keys(sourceFilters).map((source) => (
-                <div key={source} className="flex items-center px-4 py-2 hover:bg-gray-200">
-                  <button onClick={() => toggleSourceFilter(source)}>
-                    <i className={sourceFilters[source] ? "bi bi-check-circle-fill text-green-500" : "bi bi-check-circle text-gray-500"}></i>
-                  </button>
-                  <span className="ml-2">{source}</span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
@@ -257,26 +240,6 @@ export default function Home() {
             );
           })
         )}
-      </div>
-
-      {/* Menu inferior */}
-      <div className="flex justify-center items-center px-4 py-3 bg-black/80 sticky bottom-0 z-50 backdrop-blur">
-        <div className="flex gap-6 text-lg font-semibold">
-          <Link
-            to="/"
-            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
-          >
-            <i className="bi bi-house-fill"></i>
-            <span>Início</span>
-          </Link>
-          <Link
-            to="/noticias-salvas"
-            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
-          >
-            <i className="bi bi-bookmarks"></i>
-            <span>Salvas</span>
-          </Link>
-        </div>
       </div>
 
       {/* Skeleton loader */}
