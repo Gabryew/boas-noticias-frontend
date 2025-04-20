@@ -62,13 +62,10 @@ export default function Home() {
         readingTime: calcularTempoLeitura(noticia.content),
       }));
 
-      console.log('Notícias recebidas da API:', noticiasComTempo);
-
-      setNoticias((prev) => {
-        const existingLinks = new Set(prev.map(n => n.link));
-        const newNoticias = noticiasComTempo.filter(n => !existingLinks.has(n.link));
-        return [...prev, ...newNoticias];
-      });
+      setNoticias((prev) => [
+        ...prev,
+        ...noticiasComTempo.filter(n => !prev.map(p => p.link).includes(n.link))
+      ]);
 
       setHasMore(noticiasComTempo.length > 0);
     } catch (error) {
@@ -91,7 +88,7 @@ export default function Home() {
           setPage((prev) => prev + 1);
         }
       }, {
-        rootMargin: "100% 0px" // Adjust the margin to trigger loading earlier
+        rootMargin: "200px" // Adjust the margin to trigger loading earlier
       });
       if (node) observer.current.observe(node);
     },
@@ -119,9 +116,6 @@ export default function Home() {
   const filteredNoticias = noticias.filter(
     (n) => filters[n.category.toLowerCase()]
   );
-
-  console.log('Filtros de categoria:', filters);
-  console.log('Notícias filtradas:', filteredNoticias);
 
   if (loading && page === 1) {
     return (
