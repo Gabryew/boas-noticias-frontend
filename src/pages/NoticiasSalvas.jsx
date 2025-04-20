@@ -18,21 +18,23 @@ export default function NoticiasSalvas() {
   };
 
   return (
-    <div className="w-screen bg-black text-white">
-      {/* Menu superior */}
+    <div className="w-screen h-screen flex flex-col overflow-y-scroll bg-black text-white">
+      {/* Menu superior esquerdo */}
       <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
-        <div className="flex gap-4 text-sm font-semibold">
+        <div className="flex space-x-6">
           <Link
             to="/"
-            className={`hover:underline flex items-center ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
           >
-            <i className="bi bi-house"></i> Início
+            <i className="bi bi-house-fill"></i>
+            <span>Início</span>
           </Link>
           <Link
             to="/noticias-salvas"
-            className={`hover:underline flex items-center ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
           >
-            <i className="bi bi-bookmarks-fill"></i> Salvas
+            <i className="bi bi-bookmarks-fill"></i>
+            <span>Salvas</span>
           </Link>
         </div>
       </div>
@@ -42,7 +44,7 @@ export default function NoticiasSalvas() {
           <p className="text-lg">Você ainda não salvou nenhuma notícia.</p>
         </div>
       ) : (
-        <div className="p-6">
+        <div className="p-6 flex-1 overflow-y-auto">
           <h1 className="text-3xl font-bold mb-4">Notícias Salvas</h1>
           {salvas.map((noticia, index) => (
             <div
