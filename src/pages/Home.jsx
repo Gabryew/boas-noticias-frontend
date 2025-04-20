@@ -24,6 +24,12 @@ const CLASSIFICATION_ICONS = {
   ruim: "bi bi-emoji-frown text-red-500",
 };
 
+const SOURCE_COLORS = {
+  boa: "bg-green-500",
+  neutra: "bg-yellow-400",
+  ruim: "bg-red-500",
+};
+
 function calcularTempoLeitura(texto) {
   if (!texto) return null;
   const palavras = texto.trim().split(/\s+/).length;
@@ -42,6 +48,8 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [filters, setFilters] = useState({ boa: true, neutra: false, ruim: false });
+  const [sourceFilters, setSourceFilters] = useState({});
+  const [showSourceMenu, setShowSourceMenu] = useState(false);
   const observer = useRef();
 
   const navigate = useNavigate();
@@ -75,6 +83,15 @@ export default function Home() {
     fetchNoticias(page);
   }, [page]);
 
+  useEffect(() => {
+    // Initialize source filters with all sources checked
+    const allSources = ["G1", "BBC"]; // Add all your sources here
+    setSourceFilters(allSources.reduce((acc, source) => {
+      acc[source] = true;
+      return acc;
+    }, {}));
+  }, []);
+
   const lastNoticiaRef = useCallback(
     (node) => {
       if (loading) return;
@@ -107,8 +124,16 @@ export default function Home() {
     fetchNoticias(1); // Fetch noticias again with new filters
   };
 
+  const toggleSourceFilter = (source) => {
+    setSourceFilters((prev) => ({ ...prev, [source]: !prev[source] }));
+    setPage(1); // Reset page to 1 when source filters change
+    setHasMore(true);
+    setNoticias([]); // Clear noticias when source filters change
+    fetchNoticias(1); // Fetch noticias again with new source filters
+  };
+
   const filteredNoticias = noticias.filter(
-    (n) => filters[n.category] === true
+    (n) => filters[n.category] && sourceFilters[n.source]
   );
 
   if (loading && page === 1) {
@@ -122,33 +147,56 @@ export default function Home() {
   return (
     <div className="w-screen h-screen overflow-y-scroll snap-y snap-mandatory bg-black text-white">
       {/* Menu superior */}
-      <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
-        <div className="flex gap-4 text-sm font-semibold">
+      <div className="flex justify-between items-center px-4 py-6 bg-black/80 sticky top-0 z-50 backdrop-blur">
+        <div className="flex gap-6 text-lg font-semibold">
           <Link
             to="/"
-            className={`hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
           >
-            Últimas Notícias
+            <i className="bi bi-house-fill"></i> Início
           </Link>
           <Link
             to="/noticias-salvas"
-            className={`hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
           >
-            Notícias Salvas
+            <i className="bi bi-bookmarks"></i> Salvas
           </Link>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex space-x-3 items-center">
           {Object.keys(filters).map((key) => (
-            <button key={key} onClick={() => toggleFilter(key)}>
-              <i
-                className={
-                  filters[key]
-                    ? FILTER_ICONS[key].filled
-                    : FILTER_ICONS[key].outline
-                }
-              ></i>
-            </button>
+            <div key={key} className="flex flex-col items-center">
+              <button onClick={() => toggleFilter(key)}>
+                <i
+                  className={
+                    filters[key]
+                      ? FILTER_ICONS[key].filled
+                      : FILTER_ICONS[key].outline
+                  }
+                ></i>
+              </button>
+              <span className="text-xs mt-1">
+                {key.charAt(0).toUpperCase() + key.slice(1)}
+              </span>
+            </div>
           ))}
+          <div className="relative">
+            <button onClick={() => setShowSourceMenu(!showSourceMenu)} className="flex flex-col items-center">
+              <i className="bi bi-list-check text-white"></i>
+              <span className="text-xs mt-1">Fontes</span>
+            </button>
+            {showSourceMenu && (
+              <div className="absolute right-0 mt-2 bg-white text-black rounded shadow-lg z-50">
+                {Object.keys(sourceFilters).map((source) => (
+                  <div key={source} className="flex items-center px-4 py-2 hover:bg-gray-200">
+                    <button onClick={() => toggleSourceFilter(source)}>
+                      <i className={sourceFilters[source] ? "bi bi-check-circle-fill text-green-500" : "bi bi-check-circle text-gray-500"}></i>
+                    </button>
+                    <span className="ml-2">{source}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -176,10 +224,11 @@ export default function Home() {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
+                backgroundColor: noticia.image ? "transparent" : SOURCE_COLORS[noticia.category],
               }}
             >
               {/* Sobreposição escura para leitura do texto */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10" />
 
               {/* Botão de salvar */}
               <div className="absolute top-16 right-4 z-20">
