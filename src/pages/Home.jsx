@@ -64,7 +64,8 @@ export default function Home() {
         readingTime: calcularTempoLeitura(noticia.content),
       }));
 
-      // Verifica se a notícia já existe antes de adicionar
+      console.log('Notícias recebidas da API:', noticiasComTempo);
+
       setNoticias((prev) => {
         const existingLinks = new Set(prev.map(n => n.link));
         const newNoticias = noticiasComTempo.filter(n => !existingLinks.has(n.link));
@@ -124,8 +125,10 @@ export default function Home() {
   };
 
   const filteredNoticias = noticias.filter(
-    (n) => filters[n.category] && sourceFilters[n.source]
+    (n) => sourceFilters[n.source] && filters[n.category]
   );
+
+  console.log('Notícias filtradas:', filteredNoticias);
 
   if (loading && page === 1) {
     return (
