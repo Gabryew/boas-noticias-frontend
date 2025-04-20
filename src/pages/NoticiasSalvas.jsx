@@ -4,12 +4,18 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 export default function NoticiasSalvas() {
   const [salvas, setSalvas] = useState([]);
   const navigate = useNavigate();
-  const location = useLocation(); // Importando o hook useLocation para pegar o pathname atual.
+  const location = useLocation();
 
   useEffect(() => {
     const noticiasSalvas = JSON.parse(localStorage.getItem("noticiasSalvas")) || [];
     setSalvas(noticiasSalvas);
   }, []);
+
+  const handleUnsave = (index) => {
+    const updatedSalvas = salvas.filter((_, i) => i !== index);
+    setSalvas(updatedSalvas);
+    localStorage.setItem("noticiasSalvas", JSON.stringify(updatedSalvas));
+  };
 
   return (
     <div className="w-screen bg-black text-white">
@@ -18,15 +24,15 @@ export default function NoticiasSalvas() {
         <div className="flex gap-4 text-sm font-semibold">
           <Link
             to="/"
-            className={`hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
+            className={`hover:underline flex items-center ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
           >
-            Últimas Notícias
+            <i className="bi bi-house"></i> Início
           </Link>
           <Link
             to="/noticias-salvas"
-            className={`hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
+            className={`hover:underline flex items-center ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
           >
-            Notícias Salvas
+            <i className="bi bi-bookmarks-fill"></i> Salvas
           </Link>
         </div>
       </div>
@@ -41,18 +47,25 @@ export default function NoticiasSalvas() {
           {salvas.map((noticia, index) => (
             <div
               key={index}
-              className="mb-6 cursor-pointer"
+              className="mb-6 relative cursor-pointer"
               onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
             >
               <div
                 className="h-40 bg-cover bg-center rounded-xl mb-2"
-                style={{ backgroundImage: `url(${noticia.image || "default-image.jpg"})` }} // Definindo um fallback de imagem
+                style={{ backgroundImage: `url(${noticia.image || "default-image.jpg"})` }}
               />
               <h2 className="text-xl font-semibold">{noticia.title}</h2>
               <div className="text-sm text-gray-300">
                 <span>{noticia.source}</span>
                 {noticia.readingTime && <span> - Tempo de leitura: {noticia.readingTime}</span>}
               </div>
+              <i
+                className="bi bi-bookmark-heart-fill absolute top-2 right-2 text-red-500 text-2xl"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUnsave(index);
+                }}
+              ></i>
             </div>
           ))}
         </div>
