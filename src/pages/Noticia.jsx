@@ -123,19 +123,22 @@ export default function Noticia() {
 
   return (
     <div className="bg-black text-white min-h-screen">
+      {/* Menu superior esquerdo */}
       <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
-        <div className="flex gap-4 text-sm font-semibold">
+        <div className="flex space-x-6">
           <Link
             to="/"
-            className={`hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
           >
-            Últimas Notícias
+            <i className="bi bi-house"></i>
+            <span>Início</span>
           </Link>
           <Link
             to="/noticias-salvas"
-            className={`hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
           >
-            Notícias Salvas
+            <i className="bi bi-bookmarks"></i>
+            <span>Salvas</span>
           </Link>
         </div>
       </div>
