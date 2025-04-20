@@ -110,16 +110,26 @@ export default function Home() {
 
   const toggleFilter = (type) => {
     setFilters((prev) => ({ ...prev, [type]: !prev[type] }));
+    setPage(1); // Reset page to 1 when filters change
+    setHasMore(true);
+    setNoticias([]); // Clear noticias when filters change
+    fetchNoticias(1); // Fetch noticias again with new filters
   };
-  
+
   const toggleSourceFilter = (source) => {
     setSourceFilters((prev) => ({ ...prev, [source]: !prev[source] }));
+    setPage(1); // Reset page to 1 when source filters change
+    setHasMore(true);
+    setNoticias([]); // Clear noticias when source filters change
+    fetchNoticias(1); // Fetch noticias again with new source filters
   };
   
 
-  const filteredNoticias = noticias.filter(
-    (n) => sourceFilters[n.source] && filters[n.category]
-  );
+  const filteredNoticias = noticias.filter((n) => {
+    const sourceKey = n.source?.toLowerCase();
+    const categoryKey = n.category?.toLowerCase();
+    return sourceFilters[sourceKey] && filters[categoryKey];
+  });
 
   console.log('Notícias filtradas:', filteredNoticias);
 
