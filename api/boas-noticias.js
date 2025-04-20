@@ -34,13 +34,11 @@ function estimateReadingTime(content) {
 }
 
 function extractImageUrl(item) {
-  // Tenta extrair do conteúdo HTML
   const htmlContent = item.content || item['content:encoded'] || '';
   const imgRegex = /<img[^>]+src=["']([^"']+)["']/;
   const match = htmlContent.match(imgRegex);
   if (match) return match[1];
 
-  // Verifica campos alternativos
   if (item.enclosure?.url) return item.enclosure.url;
   if (item['media:content']?.url) return item['media:content'].url;
   if (item['media:thumbnail']?.url) return item['media:thumbnail'].url;
@@ -88,7 +86,7 @@ export default async function handler(req, res) {
 
           const author = item.creator || item.author || 'Desconhecido';
 
-          return {
+          const noticia = {
             title,
             content,
             link: item.link,
@@ -99,13 +97,17 @@ export default async function handler(req, res) {
             category: categoria,
             readingTime: tempoLeitura
           };
+
+          console.log('Notícia processada:', noticia);
+          return noticia;
         })
       );
 
       allNews.push(...parsedNews);
     }
 
-    // Retorna todas as notícias, independentemente da categoria
+    console.log('Todas as notícias processadas:', allNews);
+
     res.status(200).json({ noticias: allNews });
   } catch (error) {
     console.error('Erro ao obter notícias:', error);
