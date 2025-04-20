@@ -91,7 +91,7 @@ export default function Home() {
           setPage((prev) => prev + 1);
         }
       }, {
-        rootMargin: "50% 0px" // Adjust the margin to trigger loading earlier
+        rootMargin: "100% 0px" // Adjust the margin to trigger loading earlier
       });
       if (node) observer.current.observe(node);
     },
@@ -150,7 +150,7 @@ export default function Home() {
                 }
               ></i>
               <span className="text-base capitalize">
-                {key}s
+                {key === "ruim" ? "Ruins" : `${key}s`}
               </span>
             </button>
           ))}
@@ -231,8 +231,8 @@ export default function Home() {
       </div>
 
       {/* Menu inferior centralizado */}
-      <div className="fixed bottom-0 left-0 right-0 flex justify-center items-center py-3 bg-white z-50 backdrop-blur">
-        <div className="flex space-x-8 text-lg text-black">
+      <div className="fixed bottom-0 left-0 right-0 flex justify-center items-center py-3 bg-black/80 z-50 backdrop-blur">
+        <div className="flex space-x-8 text-lg text-white">
           <Link
             to="/"
             className="flex items-center gap-2 hover:underline"
