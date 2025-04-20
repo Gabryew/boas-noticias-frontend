@@ -170,7 +170,7 @@ export default function Home() {
       </div>
 
       {/* Lista de notícias */}
-      <div className="flex-1">
+      <div className="flex-1 overflow-y-auto snap-y snap-mandatory">
         {filteredNoticias.length === 0 ? (
           <div className="flex items-center justify-center h-full text-white">
             {loading ? "Carregando..." : "Nenhuma notícia encontrada."}
@@ -184,7 +184,7 @@ export default function Home() {
               <motion.div
                 key={noticia.link}
                 ref={isLast ? lastNoticiaRef : null}
-                className="w-full h-full snap-start relative cursor-pointer"
+                className="w-full h-screen snap-start relative cursor-pointer flex flex-col justify-end"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
@@ -201,7 +201,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10" />
 
                 {/* Botão de salvar */}
-                <div className="absolute top-16 right-4 z-20">
+                <div className="absolute top-4 right-4 z-20">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -219,7 +219,7 @@ export default function Home() {
                 </div>
 
                 {/* Informações da notícia */}
-                <div className="absolute bottom-12 left-4 z-20 w-full px-6 py-4 text-left space-y-2 backdrop-blur-sm">
+                <div className="absolute bottom-4 left-4 z-20 w-full px-6 py-4 text-left space-y-2 backdrop-blur-sm">
                   <h1 className="text-3xl font-extrabold leading-tight text-white drop-shadow-lg">
                     {noticia.title}
                   </h1>
