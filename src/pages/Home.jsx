@@ -130,7 +130,7 @@ export default function Home() {
   }
 
   return (
-    <div className="w-screen h-screen flex flex-col overflow-y-scroll bg-black text-white">
+    <div className="w-screen h-screen flex flex-col overflow-hidden bg-black text-white">
       {/* Menu superior esquerdo */}
       <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
         <div className="flex space-x-6">
@@ -151,8 +151,8 @@ export default function Home() {
         </div>
         <div className="flex space-x-6">
           {Object.keys(filters).map((key) => (
-            <div key={key} className="flex flex-col items-center">
-              <button onClick={() => toggleFilter(key)}>
+            <div key={key} className="flex items-center gap-2">
+              <button onClick={() => toggleFilter(key)} className="flex items-center gap-2">
                 <i
                   className={
                     filters[key]
@@ -160,10 +160,10 @@ export default function Home() {
                       : FILTER_ICONS[key].outline
                   }
                 ></i>
+                <span className="text-xs mt-1">
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                </span>
               </button>
-              <span className="text-xs mt-1">
-                {key.charAt(0).toUpperCase() + key.slice(1)}
-              </span>
             </div>
           ))}
         </div>
