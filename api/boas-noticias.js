@@ -49,6 +49,8 @@ function extractImageUrl(item) {
 
 export default async function handler(req, res) {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const itemsPerPage = 5; // Number of items to load per page
     const allNews = [];
 
     for (const feedUrl of FEEDS) {
@@ -106,9 +108,14 @@ export default async function handler(req, res) {
       allNews.push(...parsedNews);
     }
 
-    console.log('Todas as notícias processadas:', allNews);
+    // Paginate the news
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedNews = allNews.slice(startIndex, endIndex);
 
-    res.status(200).json({ noticias: allNews });
+    console.log('Notícias paginadas:', paginatedNews);
+
+    res.status(200).json({ noticias: paginatedNews });
   } catch (error) {
     console.error('Erro ao obter notícias:', error);
     res.status(500).json({ error: 'Erro ao obter notícias' });
