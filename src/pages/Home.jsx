@@ -90,6 +90,8 @@ export default function Home() {
         if (entries[0].isIntersecting && hasMore) {
           setPage((prev) => prev + 1);
         }
+      }, {
+        rootMargin: "50% 0px" // Adjust the margin to trigger loading earlier
       });
       if (node) observer.current.observe(node);
     },
@@ -130,41 +132,27 @@ export default function Home() {
   }
 
   return (
-    <div className="w-screen h-screen flex flex-col overflow-hidden bg-black text-white">
-      {/* Menu superior esquerdo */}
-      <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
-        <div className="flex space-x-6">
-          <Link
-            to="/"
-            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
-          >
-            <i className="bi bi-house"></i>
-            <span>Início</span>
-          </Link>
-          <Link
-            to="/noticias-salvas"
-            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
-          >
-            <i className="bi bi-bookmarks"></i>
-            <span>Salvas</span>
-          </Link>
-        </div>
-        <div className="flex space-x-6">
+    <div className="w-screen h-screen flex flex-col bg-black text-white">
+      {/* Menu superior centralizado */}
+      <div className="flex justify-center items-center py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
+        <div className="flex space-x-8 text-lg">
           {Object.keys(filters).map((key) => (
-            <div key={key} className="flex items-center gap-2">
-              <button onClick={() => toggleFilter(key)} className="flex items-center gap-2">
-                <i
-                  className={
-                    filters[key]
-                      ? FILTER_ICONS[key].filled
-                      : FILTER_ICONS[key].outline
-                  }
-                ></i>
-                <span className="text-xs mt-1">
-                  {key.charAt(0).toUpperCase() + key.slice(1)}
-                </span>
-              </button>
-            </div>
+            <button
+              key={key}
+              onClick={() => toggleFilter(key)}
+              className="flex items-center gap-2 hover:underline"
+            >
+              <i
+                className={
+                  filters[key]
+                    ? FILTER_ICONS[key].filled
+                    : FILTER_ICONS[key].outline
+                }
+              ></i>
+              <span className="text-base">
+                {key.charAt(0).toUpperCase() + key.slice(1)}
+              </span>
+            </button>
           ))}
         </div>
       </div>
@@ -240,6 +228,26 @@ export default function Home() {
             );
           })
         )}
+      </div>
+
+      {/* Menu inferior centralizado */}
+      <div className="fixed bottom-0 left-0 right-0 flex justify-center items-center py-3 bg-black/80 z-50 backdrop-blur">
+        <div className="flex space-x-8 text-lg">
+          <Link
+            to="/"
+            className="flex items-center gap-2 hover:underline"
+          >
+            <i className="bi bi-house text-xl"></i>
+            <span className="text-base">Início</span>
+          </Link>
+          <Link
+            to="/noticias-salvas"
+            className="flex items-center gap-2 hover:underline"
+          >
+            <i className="bi bi-bookmarks text-xl"></i>
+            <span className="text-base">Salvas</span>
+          </Link>
+        </div>
       </div>
 
       {/* Skeleton loader */}
