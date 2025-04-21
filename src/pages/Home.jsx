@@ -26,15 +26,16 @@ export default function Home() {
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(false);
   const [salvas, setSalvas] = useState(() => JSON.parse(localStorage.getItem("noticiasSalvas")) || []);
-  const [cursor, setCursor] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [cursor, setCursor] = useState(null); // Inicializando o cursor como null
+  const [hasMore, setHasMore] = useState(true); // Controlando a lógica de mais notícias
   const [filters, setFilters] = useState({ boa: true, neutra: false, ruim: false });
   const observer = useRef();
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Função para carregar as notícias com base no cursor
   const fetchNoticias = async () => {
-    if (!hasMore || loading) return;
+    if (loading || !hasMore) return; // Impede múltiplas requisições enquanto está carregando
 
     setLoading(true);
     try {
@@ -51,8 +52,8 @@ export default function Home() {
         ...prev,
         ...novasNoticias.filter((n) => !prev.map((p) => p.id).includes(n.id)),
       ]);
-      setHasMore(novasNoticias.length > 0);
-      setCursor(response.data.nextCursor || 0); // Se o próximo cursor for nulo, manter como 0
+      setHasMore(novasNoticias.length > 0); // Se a resposta não trouxer mais notícias, desativa o scroll infinito
+      setCursor(response.data.nextCursor || null); // Se o próximo cursor for nulo, não atualiza
     } catch (error) {
       console.error("Erro ao buscar notícias:", error);
     } finally {
@@ -60,20 +61,21 @@ export default function Home() {
     }
   };
 
+  // Função para observar o final da lista de notícias e carregar mais quando necessário
   const lastNoticiaRef = useCallback(
     (node) => {
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver(
         (entries) => {
           if (entries[0].isIntersecting && hasMore) {
-            fetchNoticias();
+            fetchNoticias(); // Carregar mais notícias quando o final da página for alcançado
           }
         },
-        { rootMargin: "200px" }
+        { rootMargin: "200px" } // Começa a carregar antes de chegar no final
       );
       if (node) observer.current.observe(node);
     },
-    [hasMore]
+    [hasMore] // O observer só é ativado se houver mais notícias para carregar
   );
 
   const toggleSalvarNoticia = (noticia) => {
@@ -85,7 +87,7 @@ export default function Home() {
 
   const toggleFilter = (type) => {
     setFilters((prev) => ({ ...prev, [type]: !prev[type] }));
-    setCursor(0); // Reset cursor para o início
+    setCursor(null); // Reset cursor para o início quando alterar o filtro
     setHasMore(true);
     setNoticias([]);
   };
@@ -93,8 +95,16 @@ export default function Home() {
   const filteredNoticias = noticias.filter((n) => filters[n.category.toLowerCase()]);
 
   useEffect(() => {
-    fetchNoticias();
-  }, [cursor]); // Depende apenas do cursor
+    if (cursor !== null) {
+      fetchNoticias();
+    }
+  }, [cursor]); // A primeira chamada de fetchNoticias só ocorre se o cursor não for nulo
+
+  useEffect(() => {
+    if (hasMore && !loading) {
+      fetchNoticias();
+    }
+  }, []); // Carregar a primeira página de notícias apenas quando o componente for montado
 
   useEffect(() => {
     if (!hasMore && !loading) {
@@ -102,7 +112,7 @@ export default function Home() {
     }
   }, [hasMore, loading]);
 
-  if (loading && cursor === 0) {
+  if (loading && cursor === null) {
     return (
       <div className="flex items-center justify-center h-screen bg-black">
         <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
