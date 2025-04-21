@@ -6,7 +6,7 @@ const sentiment = new Sentiment();
 
 const FEEDS = [
   'https://g1.globo.com/rss/g1/',
-  'https://rss.app/feeds/xVpKrMZmJpq0m0Ml.xml',
+  'https://rss.uol.com.br/feed/noticias.xml',
   'https://feeds.bbci.co.uk/portuguese/rss.xml',
 ];
 
