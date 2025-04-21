@@ -143,7 +143,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto snap-y snap-mandatory">
+      <div className="flex-1 overflow-y-auto snap-y snap-mandatory" style={{ height: 'calc(100vh - 60px)' }}>
         {filteredNoticias.length === 0 ? (
           <div className="flex items-center justify-center h-full text-white">
             {loading ? "Carregando..." : "Nenhuma notícia encontrada."}
