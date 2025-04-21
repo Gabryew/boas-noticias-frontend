@@ -81,7 +81,7 @@ export default function Home() {
 
   const handleScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.target;
-    const buffer = 300; // Carrega mais 300px antes do fim
+    const buffer = 500; // Carrega mais 300px antes do fim
     if (scrollTop + clientHeight >= scrollHeight - buffer && hasMore && !loading) {
       fetchNoticias(cursor);
     }

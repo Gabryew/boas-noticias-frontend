@@ -20,7 +20,7 @@ export default function NoticiasSalvas() {
   return (
     <div className="w-screen h-screen flex flex-col overflow-y-scroll bg-black text-white">
       {/* Menu superior esquerdo */}
-      <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
+      <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur" style={{ height: '60px' }}>
         <div className="flex space-x-6">
           <Link
             to="/"
