@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -79,19 +79,13 @@ export default function Home() {
     }
   }, [cursor]);
 
-  useEffect(() => {
-    if (!hasMore && !loading) {
-      console.log("Não há mais notícias para carregar.");
+  const handleScroll = (e) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.target;
+    const buffer = 300; // Carrega mais 300px antes do fim
+    if (scrollTop + clientHeight >= scrollHeight - buffer && hasMore && !loading) {
+      fetchNoticias(cursor);
     }
-  }, [hasMore, loading]);
-
-  if (loading && cursor === null) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-black">
-        <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
-      </div>
-    );
-  }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
@@ -124,12 +118,7 @@ export default function Home() {
       <div
         className="flex-1 overflow-y-auto snap-y snap-mandatory"
         style={{ height: 'calc(100vh - 60px)' }}
-        onScroll={(e) => {
-          const { scrollTop, clientHeight, scrollHeight } = e.target;
-          if (scrollTop + clientHeight >= scrollHeight - 10 && hasMore && !loading) {
-            fetchNoticias(cursor);
-          }
-        }}
+        onScroll={handleScroll}
       >
         {filteredNoticias.length === 0 ? (
           <div className="flex items-center justify-center h-full text-white">
@@ -142,7 +131,7 @@ export default function Home() {
             return (
               <motion.div
                 key={noticia.id}
-                className="w-full h-screen snap-start relative cursor-pointer flex flex-col justify-end"
+                className="w-full h-[calc(100vh-60px)] snap-start relative cursor-pointer flex flex-col justify-end"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
@@ -156,7 +145,8 @@ export default function Home() {
                 }}
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10" />
-                <div className="absolute top-[64px] right-4 z-20">
+
+                <div className="absolute top-4 right-4 z-20">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -168,6 +158,7 @@ export default function Home() {
                     {salva ? <i className="bi bi-bookmark-heart-fill text-red-500"></i> : <i className="bi bi-bookmark-heart"></i>}
                   </button>
                 </div>
+
                 <div className="absolute bottom-4 left-4 z-20 w-full px-6 py-4 text-left space-y-2 backdrop-blur-sm">
                   <h1 className="text-3xl font-extrabold leading-tight text-white drop-shadow-lg">{noticia.title}</h1>
                   <div className="text-sm flex flex-col gap-1 font-light">
