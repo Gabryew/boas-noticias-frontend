@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const ICONS = {
@@ -40,6 +40,8 @@ export default function Home() {
         ...noticia,
         readingTime: calcularTempoLeitura(noticia.content),
       }));
+
+      console.log("Notícias buscadas:", novasNoticias); // Log das notícias buscadas
 
       setNoticias((prev) => [
         ...prev,
@@ -90,6 +92,8 @@ export default function Home() {
 
   const filteredNoticias = noticias.filter((n) => filters[n.category.toLowerCase()]);
 
+  console.log("Notícias filtradas:", filteredNoticias); // Log das notícias filtradas
+
   if (loading && page === 1) {
     return (
       <div className="flex items-center justify-center h-screen bg-black">
@@ -102,10 +106,15 @@ export default function Home() {
     <div className="flex flex-col h-screen bg-black text-white overflow-y-scroll">
       <div className="flex justify-center items-center py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
         <div className="flex space-x-8 text-lg">
+          <Link to="/" className="flex items-center gap-2 hover:underline">
+            <i className="bi bi-house text-xl"></i>
+          </Link>
+          <Link to="/noticias-salvas" className="flex items-center gap-2 hover:underline">
+            <i className="bi bi-bookmarks text-xl"></i>
+          </Link>
           {Object.keys(filters).map((key) => (
-            <button key={key} onClick={() => toggleFilter(key)} className="flex items-center gap-2 hover:underline">
+            <button key={key} onClick={() => toggleFilter(key)} className="hover:underline">
               <i className={filters[key] ? ICONS[key].filled : ICONS[key].outline}></i>
-              <span className="text-base capitalize">{key === "ruim" ? "Ruins" : `${key}s`}</span>
             </button>
           ))}
         </div>
@@ -170,19 +179,6 @@ export default function Home() {
             );
           })
         )}
-      </div>
-
-      <div className="fixed bottom-0 left-0 right-0 flex justify-center items-center py-3 bg-black/80 z-50 backdrop-blur">
-        <div className="flex space-x-8 text-lg text-white">
-          <Link to="/" className="flex items-center gap-2 hover:underline">
-            <i className="bi bi-house text-xl"></i>
-            <span className="text-base">Início</span>
-          </Link>
-          <Link to="/noticias-salvas" className="flex items-center gap-2 hover:underline">
-            <i className="bi bi-bookmarks text-xl"></i>
-            <span className="text-base">Salvas</span>
-          </Link>
-        </div>
       </div>
 
       {loading && (
