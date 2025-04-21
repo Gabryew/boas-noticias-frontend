@@ -45,9 +45,6 @@ export default function Home() {
         readingTime: calcularTempoLeitura(noticia.content),
       }));
 
-      // Log para verificar o que estamos recebendo
-      console.log("Notícias recebidas:", novasNoticias);
-
       setNoticias((prev) => [
         ...prev,
         ...novasNoticias.filter((n) => !prev.map((p) => p.id).includes(n.id)),
@@ -94,7 +91,6 @@ export default function Home() {
 
   const filteredNoticias = noticias.filter((n) => filters[n.category.toLowerCase()]);
 
-  // Carrega as notícias pela primeira vez, mas agora garantimos que o cursor é definido
   useEffect(() => {
     if (cursor === null) {
       fetchNoticias(''); // Passa uma string vazia ao invés de null
@@ -143,7 +139,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto snap-y snap-mandatory" style={{ height: 'calc(100vh - 60px)' }}>
+      <div className="flex-1 overflow-y-auto" style={{ height: 'calc(100vh - 60px)' }}>
         {filteredNoticias.length === 0 ? (
           <div className="flex items-center justify-center h-full text-white">
             {loading ? "Carregando..." : "Nenhuma notícia encontrada."}
@@ -203,24 +199,6 @@ export default function Home() {
           })
         )}
       </div>
-
-      {loading && (
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="animate-pulse bg-zinc-100 dark:bg-zinc-800 p-4 rounded-2xl shadow-md">
-              <div className="h-48 bg-zinc-300 dark:bg-zinc-700 rounded mb-4"></div>
-              <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-3/4 mb-2"></div>
-              <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/2"></div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {!hasMore && !loading && (
-        <div className="flex items-center justify-center h-screen text-white">
-          Não há mais notícias para carregar.
-        </div>
-      )}
     </div>
   );
 }
