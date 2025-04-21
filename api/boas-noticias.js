@@ -49,8 +49,8 @@ function extractImageUrl(item) {
 
 export default async function handler(req, res) {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const itemsPerPage = 5; // Number of items to load per page
+    const cursor = parseInt(req.query.cursor) || 0; // Use a cursor for infinite scrolling
+    const limit = 10; // Number of items to load per request
     const allNews = [];
 
     for (const feedUrl of FEEDS) {
@@ -70,7 +70,6 @@ export default async function handler(req, res) {
       const parsedNews = await Promise.all(
         feed.items.map(async (item) => {
           const title = item.title || '';
-
           const content =
             item.contentSnippet ||
             item.summary ||
@@ -82,13 +81,12 @@ export default async function handler(req, res) {
           const categoria = classificarNoticia(title + ' ' + content);
           const tempoLeitura = estimateReadingTime(content);
           const imageUrl = extractImageUrl(item);
-
           const rawDate = item.pubDate || item.isoDate || '';
           const date = rawDate ? new Date(rawDate).toISOString() : null;
-
           const author = item.creator || item.author || 'Desconhecido';
 
           const noticia = {
+            id: `${feedUrl}-${item.link}`, // Unique ID for each news item
             title,
             content,
             link: item.link,
@@ -97,7 +95,9 @@ export default async function handler(req, res) {
             author,
             source: feed.title,
             category: categoria,
-            readingTime: tempoLeitura
+            readingTime: tempoLeitura,
+            likes: 0, // Placeholder for likes
+            shares: 0, // Placeholder for shares
           };
 
           console.log('Notícia processada:', noticia);
@@ -108,14 +108,18 @@ export default async function handler(req, res) {
       allNews.push(...parsedNews);
     }
 
-    // Paginate the news
-    const startIndex = (page - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedNews = allNews.slice(startIndex, endIndex);
+    // Sort news by date, newest first
+    allNews.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Implement infinite scrolling with cursor
+    const paginatedNews = allNews.slice(cursor, cursor + limit);
 
     console.log('Notícias paginadas:', paginatedNews);
 
-    res.status(200).json({ noticias: paginatedNews });
+    res.status(200).json({
+      noticias: paginatedNews,
+      nextCursor: cursor + limit, // Send the next cursor for the next batch of news
+    });
   } catch (error) {
     console.error('Erro ao obter notícias:', error);
     res.status(500).json({ error: 'Erro ao obter notícias' });
