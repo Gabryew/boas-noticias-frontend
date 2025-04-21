@@ -35,7 +35,7 @@ export default function Home() {
 
   // Função para carregar as notícias com base no cursor
   const fetchNoticias = async (cursorValue) => {
-    if (loading || !hasMore || !cursorValue) return; // Impede múltiplas requisições enquanto está carregando
+    if (loading || !hasMore || cursorValue === undefined) return; // Impede múltiplas requisições enquanto está carregando
 
     setLoading(true);
     try {
@@ -94,12 +94,10 @@ export default function Home() {
 
   const filteredNoticias = noticias.filter((n) => filters[n.category.toLowerCase()]);
 
+  // Carrega as notícias pela primeira vez, mas agora garantimos que o cursor é definido
   useEffect(() => {
     if (cursor === null) {
-      // Carregar a primeira página de notícias apenas quando o cursor for nulo
-      fetchNoticias(null);
-    } else if (cursor) {
-      fetchNoticias(cursor);
+      fetchNoticias(''); // Passa uma string vazia ao invés de null
     }
   }, [cursor]); // A primeira chamada de fetchNoticias só ocorre se o cursor não for nulo
 
