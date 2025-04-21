@@ -124,7 +124,7 @@ export default function Noticia() {
   return (
     <div className="bg-black text-white min-h-screen">
       {/* Menu superior esquerdo */}
-      <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
+      <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur" style={{ height: '60px' }}>
         <div className="flex space-x-6">
           <Link
             to="/"
