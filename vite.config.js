@@ -28,24 +28,20 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Adicionando cache dinâmico para as requisições da API
         runtimeCaching: [
           {
             urlPattern: /\/api\/boas-noticias/,
-            handler: 'NetworkFirst', // Tenta primeiro a rede, depois o cache
+            handler: 'NetworkFirst',
             options: {
               cacheName: 'noticias-api-cache',
               expiration: {
-                maxEntries: 10, // Limita o número de entradas no cache
-                maxAgeSeconds: 60 * 60, // 1 hora
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60,
               },
             },
           },
         ],
       },
-      // Substitua o arquivo padrão do Vite pelo seu customizado
-      srcDir: 'src', // Onde seu arquivo service-worker.js está localizado
-      filename: 'service-worker.js', // Nome do arquivo customizado
     }),
   ],
   build: {
@@ -55,7 +51,6 @@ export default defineConfig({
     },
   },
   server: {
-    // O proxy pode ser removido, pois você já está utilizando a URL da API da Vercel diretamente
-    // E você pode rodar sua aplicação normalmente em desenvolvimento
+    // Você pode configurar opções de servidor aqui, se necessário
   },
 });
