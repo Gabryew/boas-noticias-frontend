@@ -59,7 +59,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchNoticias();
-  }, []);
+  }, [cursor]);
 
   const lastNoticiaRef = useCallback(
     (node) => {
