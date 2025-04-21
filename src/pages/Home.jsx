@@ -34,12 +34,12 @@ export default function Home() {
   const location = useLocation();
 
   // Função para carregar as notícias com base no cursor
-  const fetchNoticias = async () => {
-    if (loading || !hasMore) return; // Impede múltiplas requisições enquanto está carregando
+  const fetchNoticias = async (cursorValue) => {
+    if (loading || !hasMore || !cursorValue) return; // Impede múltiplas requisições enquanto está carregando
 
     setLoading(true);
     try {
-      const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?cursor=${cursor}`);
+      const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?cursor=${cursorValue}`);
       const novasNoticias = response.data.noticias.map((noticia) => ({
         ...noticia,
         readingTime: calcularTempoLeitura(noticia.content),
@@ -68,14 +68,14 @@ export default function Home() {
       observer.current = new IntersectionObserver(
         (entries) => {
           if (entries[0].isIntersecting && hasMore) {
-            fetchNoticias(); // Carregar mais notícias quando o final da página for alcançado
+            fetchNoticias(cursor); // Carregar mais notícias quando o final da página for alcançado
           }
         },
         { rootMargin: "200px" } // Começa a carregar antes de chegar no final
       );
       if (node) observer.current.observe(node);
     },
-    [hasMore] // O observer só é ativado se houver mais notícias para carregar
+    [hasMore, cursor] // O observer só é ativado se houver mais notícias para carregar e cursor não for null
   );
 
   const toggleSalvarNoticia = (noticia) => {
@@ -95,16 +95,13 @@ export default function Home() {
   const filteredNoticias = noticias.filter((n) => filters[n.category.toLowerCase()]);
 
   useEffect(() => {
-    if (cursor !== null) {
-      fetchNoticias();
+    if (cursor === null) {
+      // Carregar a primeira página de notícias apenas quando o cursor for nulo
+      fetchNoticias(null);
+    } else if (cursor) {
+      fetchNoticias(cursor);
     }
   }, [cursor]); // A primeira chamada de fetchNoticias só ocorre se o cursor não for nulo
-
-  useEffect(() => {
-    if (hasMore && !loading) {
-      fetchNoticias();
-    }
-  }, []); // Carregar a primeira página de notícias apenas quando o componente for montado
 
   useEffect(() => {
     if (!hasMore && !loading) {
