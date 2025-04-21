@@ -43,6 +43,11 @@ export default function Home() {
 
       console.log("Notícias buscadas:", novasNoticias); // Log das notícias buscadas
 
+      // Log das categorias das notícias buscadas
+      novasNoticias.forEach(noticia => {
+        console.log("Categoria da notícia:", noticia.category);
+      });
+
       setNoticias((prev) => [
         ...prev,
         ...novasNoticias.filter((n) => !prev.map((p) => p.link).includes(n.link)),
