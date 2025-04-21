@@ -126,7 +126,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-black text-white">
+    <div className="flex flex-col h-screen bg-black text-white overflow-y-scroll">
       {/* Menu superior centralizado */}
       <div className="flex justify-center items-center py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
         <div className="flex space-x-8 text-lg">
@@ -225,7 +225,7 @@ export default function Home() {
       </div>
 
       {/* Menu inferior centralizado */}
-      <div className="fixed bottom-0 left-0 right-0 flex justify-center items-center py-3 bg-black/80 z-50 backdrop-blur">
+      <div className="flex justify-center items-center py-3 bg-black/80 z-50 backdrop-blur">
         <div className="flex space-x-8 text-lg text-white">
           <Link
             to="/"
