@@ -34,7 +34,6 @@ export default function Home() {
   const location = useLocation();
 
   const fetchNoticias = async () => {
-    setLoading(true);
     try {
       const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?page=${page}`);
       const novasNoticias = response.data.noticias.map((noticia) => ({
@@ -62,7 +61,6 @@ export default function Home() {
 
   const lastNoticiaRef = useCallback(
     (node) => {
-      if (loading) return;
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver(
         (entries) => {
@@ -70,11 +68,11 @@ export default function Home() {
             setPage((prev) => prev + 1);
           }
         },
-        { rootMargin: "200px" }
+        { rootMargin: "500px" } // Ajuste para carregar mais cedo
       );
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore]
+    [hasMore]
   );
 
   const toggleSalvarNoticia = (noticia) => {
@@ -94,14 +92,6 @@ export default function Home() {
   const filteredNoticias = noticias.filter((n) => filters[n.category.toLowerCase()]);
 
   console.log("Notícias filtradas:", filteredNoticias); // Log das notícias filtradas
-
-  if (loading && page === 1) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-black">
-        <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col h-screen bg-black text-white overflow-y-scroll">
@@ -134,7 +124,7 @@ export default function Home() {
       <div className="flex-1 overflow-y-auto snap-y snap-mandatory">
         {filteredNoticias.length === 0 ? (
           <div className="flex items-center justify-center h-full text-white">
-            {loading ? "Carregando..." : "Nenhuma notícia encontrada."}
+            Nenhuma notícia encontrada.
           </div>
         ) : (
           filteredNoticias.map((noticia, index) => {
@@ -192,19 +182,7 @@ export default function Home() {
         )}
       </div>
 
-      {loading && (
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="animate-pulse bg-zinc-100 dark:bg-zinc-800 p-4 rounded-2xl shadow-md">
-              <div className="h-48 bg-zinc-300 dark:bg-zinc-700 rounded mb-4"></div>
-              <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-3/4 mb-2"></div>
-              <div className="h-4 bg-zinc-300 dark:bg-zinc-700 rounded w-1/2"></div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {!hasMore && !loading && (
+      {!hasMore && (
         <div className="flex items-center justify-center h-screen text-white">
           Não há mais notícias para carregar.
         </div>
