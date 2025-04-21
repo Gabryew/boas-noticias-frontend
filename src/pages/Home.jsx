@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -26,16 +26,15 @@ export default function Home() {
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(false);
   const [salvas, setSalvas] = useState(() => JSON.parse(localStorage.getItem("noticiasSalvas")) || []);
-  const [cursor, setCursor] = useState(null); // Inicializando o cursor como null
-  const [hasMore, setHasMore] = useState(true); // Controlando a lógica de mais notícias
+  const [cursor, setCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
   const [filters, setFilters] = useState({ boa: true, neutra: false, ruim: false });
-  const observer = useRef();
+
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Função para carregar as notícias com base no cursor
   const fetchNoticias = async (cursorValue) => {
-    if (loading || !hasMore || cursorValue === undefined) return; // Impede múltiplas requisições enquanto está carregando
+    if (loading || !hasMore || cursorValue === undefined) return;
 
     setLoading(true);
     try {
@@ -49,31 +48,14 @@ export default function Home() {
         ...prev,
         ...novasNoticias.filter((n) => !prev.map((p) => p.id).includes(n.id)),
       ]);
-      setHasMore(novasNoticias.length > 0); // Se a resposta não trouxer mais notícias, desativa o scroll infinito
-      setCursor(response.data.nextCursor || null); // Se o próximo cursor for nulo, não atualiza
+      setHasMore(novasNoticias.length > 0);
+      setCursor(response.data.nextCursor || null);
     } catch (error) {
       console.error("Erro ao buscar notícias:", error);
     } finally {
       setLoading(false);
     }
   };
-
-  // Função para observar o final da lista de notícias e carregar mais quando necessário
-  const lastNoticiaRef = useCallback(
-    (node) => {
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting && hasMore) {
-            fetchNoticias(cursor); // Carregar mais notícias quando o final da página for alcançado
-          }
-        },
-        { rootMargin: "100px" } // Começa a carregar 100px antes de chegar no final da página
-      );
-      if (node) observer.current.observe(node);
-    },
-    [hasMore, cursor] // O observer só é ativado se houver mais notícias para carregar e cursor não for null
-  );
 
   const toggleSalvarNoticia = (noticia) => {
     const jaSalva = salvas.find((n) => n.id === noticia.id);
@@ -84,7 +66,7 @@ export default function Home() {
 
   const toggleFilter = (type) => {
     setFilters((prev) => ({ ...prev, [type]: !prev[type] }));
-    setCursor(null); // Reset cursor para o início quando alterar o filtro
+    setCursor(null);
     setHasMore(true);
     setNoticias([]);
   };
@@ -93,9 +75,9 @@ export default function Home() {
 
   useEffect(() => {
     if (cursor === null) {
-      fetchNoticias(''); // Passa uma string vazia ao invés de null
+      fetchNoticias('');
     }
-  }, [cursor]); // A primeira chamada de fetchNoticias só ocorre se o cursor não for nulo
+  }, [cursor]);
 
   useEffect(() => {
     if (!hasMore && !loading) {
@@ -139,20 +121,27 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto" style={{ height: 'calc(100vh - 60px)' }}>
+      <div
+        className="flex-1 overflow-y-auto snap-y snap-mandatory"
+        style={{ height: 'calc(100vh - 60px)' }}
+        onScroll={(e) => {
+          const { scrollTop, clientHeight, scrollHeight } = e.target;
+          if (scrollTop + clientHeight >= scrollHeight - 10 && hasMore && !loading) {
+            fetchNoticias(cursor);
+          }
+        }}
+      >
         {filteredNoticias.length === 0 ? (
           <div className="flex items-center justify-center h-full text-white">
             {loading ? "Carregando..." : "Nenhuma notícia encontrada."}
           </div>
         ) : (
           filteredNoticias.map((noticia, index) => {
-            const isLast = index === filteredNoticias.length - 1;
             const salva = salvas.find((n) => n.id === noticia.id);
 
             return (
               <motion.div
                 key={noticia.id}
-                ref={isLast ? lastNoticiaRef : null}
                 className="w-full h-screen snap-start relative cursor-pointer flex flex-col justify-end"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -167,7 +156,7 @@ export default function Home() {
                 }}
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10" />
-                <div className="absolute top-4 right-4 z-20">
+                <div className="absolute top-[64px] right-4 z-20">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
