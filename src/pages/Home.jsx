@@ -71,7 +71,7 @@ export default function Home() {
             fetchNoticias(cursor); // Carregar mais notícias quando o final da página for alcançado
           }
         },
-        { rootMargin: "200px" } // Começa a carregar antes de chegar no final
+        { rootMargin: "100px" } // Começa a carregar 100px antes de chegar no final da página
       );
       if (node) observer.current.observe(node);
     },
@@ -116,8 +116,8 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-black text-white overflow-y-scroll">
-      <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
+    <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
+      <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur" style={{ height: '60px' }}>
         <div className="flex space-x-6">
           <Link
             to="/"
