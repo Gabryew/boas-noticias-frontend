@@ -38,6 +38,7 @@ export default function Home() {
 
     setLoading(true);
     try {
+      // Alterando a URL conforme necessário
       const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?cursor=${cursorValue}`);
       const novasNoticias = response.data.noticias.map((noticia) => ({
         ...noticia,
@@ -81,7 +82,7 @@ export default function Home() {
 
   const handleScroll = (e) => {
     const { scrollTop, clientHeight, scrollHeight } = e.target;
-    const buffer = 500; // Carrega mais 300px antes do fim
+    const buffer = 500; // Carrega mais 500px antes do fim
     if (scrollTop + clientHeight >= scrollHeight - buffer && hasMore && !loading) {
       fetchNoticias(cursor);
     }

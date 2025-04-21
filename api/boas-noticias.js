@@ -1,13 +1,12 @@
-import Parser from 'rss-parser';
+import axios from 'axios';
 import Sentiment from 'sentiment';
 
-const parser = new Parser();
 const sentiment = new Sentiment();
 
 const FEEDS = [
   'https://g1.globo.com/rss/g1/',
-  'https://rss.uol.com.br/feed/noticias.xml',
   'https://feeds.bbci.co.uk/portuguese/rss.xml',
+  'https://rss.app/feeds/v1.1/xVpKrMZmJpq0m0Ml.json', // Adicionando o feed em JSON
 ];
 
 const cache = new Map();
@@ -57,19 +56,28 @@ export default async function handler(req, res) {
     for (const feedUrl of FEEDS) {
       let feed;
       try {
-        feed = await parser.parseURL(feedUrl);
+        // Verifica se o feed é JSON
+        if (feedUrl.endsWith('.json')) {
+          const response = await axios.get(feedUrl);
+          feed = response.data; // Feed JSON
+        } else {
+          // Usar rss-parser para feeds RSS
+          const Parser = (await import('rss-parser')).default;
+          const parser = new Parser();
+          feed = await parser.parseURL(feedUrl);
+        }
       } catch (feedError) {
         console.error(`Erro ao processar o feed ${feedUrl}:`, feedError);
         continue;
       }
 
       if (!feed || !feed.items || feed.items.length === 0) {
-        console.warn(`O feed ${feedUrl} não contém itens válidos ou não é um RSS válido.`);
+        console.warn(`O feed ${feedUrl} não contém itens válidos ou não é um feed válido.`);
         continue;
       }
 
       const parsedNews = await Promise.all(
-        feed.items.map(async (item) => {
+        (feed.items || feed.data.items).map(async (item) => {
           const title = item.title || '';
           const content =
             item.contentSnippet ||
@@ -94,7 +102,7 @@ export default async function handler(req, res) {
             date,
             image: imageUrl,
             author,
-            source: feed.title,
+            source: feed.title || feed.source || 'Fonte desconhecida',
             category: categoria,
             readingTime: tempoLeitura,
             likes: 0, // Placeholder for likes
