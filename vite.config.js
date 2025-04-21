@@ -2,18 +2,30 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate', // Define o tipo de registro do service worker
+      registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true, // Ativa PWA em ambiente de desenvolvimento (útil para testes)
+      },
+      includeAssets: [
+        'icons/icon-192x192.png',
+        'icons/icon-512x512.png',
+        'favicon.ico',
+        'robots.txt',
+        'apple-touch-icon.png',
+      ],
       manifest: {
         name: 'Notícia Boa',
         short_name: 'Notícia Boa',
         description: 'Notícia boa corre aqui',
-        theme_color: '#000000', // Cor do tema
-        background_color: '#000000', // Cor de fundo ao carregar
+        start_url: '/',
+        scope: '/',
+        display: 'standalone',
+        theme_color: '#000000',
+        background_color: '#000000',
         icons: [
           {
             src: '/icons/icon-192x192.png',
@@ -30,13 +42,17 @@ export default defineConfig({
       workbox: {
         runtimeCaching: [
           {
-            urlPattern: /\/api\/boas-noticias/,
+            urlPattern: /^https:\/\/boas-noticias-frontend\.vercel\.app\/api\/boas-noticias.*$/,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'noticias-api-cache',
+              networkTimeoutSeconds: 10,
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60,
+                maxAgeSeconds: 60 * 60, // 1 hora
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
               },
             },
           },
@@ -47,10 +63,11 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     rollupOptions: {
-      external: ['react-icons'], // Isso ajuda a manter o tamanho do bundle menor
+      external: ['react-icons'],
     },
   },
   server: {
-    // Você pode configurar opções de servidor aqui, se necessário
+    port: 3000, // opcional
+    open: true, // opcional
   },
 });
