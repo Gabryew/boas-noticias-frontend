@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const ICONS = {
@@ -31,6 +31,7 @@ export default function Home() {
   const [filters, setFilters] = useState({ boa: true, neutra: false, ruim: false });
   const observer = useRef();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const fetchNoticias = async () => {
     setLoading(true);
@@ -104,14 +105,24 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen bg-black text-white overflow-y-scroll">
-      <div className="flex justify-center items-center py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
+      <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur">
+        <div className="flex space-x-6">
+          <Link
+            to="/"
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
+          >
+            <i className="bi bi-house-fill"></i>
+            <span>Início</span>
+          </Link>
+          <Link
+            to="/noticias-salvas"
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
+          >
+            <i className="bi bi-bookmarks-fill"></i>
+            <span>Salvas</span>
+          </Link>
+        </div>
         <div className="flex space-x-8 text-lg">
-          <Link to="/" className="flex items-center gap-2 hover:underline">
-            <i className="bi bi-house text-xl"></i>
-          </Link>
-          <Link to="/noticias-salvas" className="flex items-center gap-2 hover:underline">
-            <i className="bi bi-bookmarks text-xl"></i>
-          </Link>
           {Object.keys(filters).map((key) => (
             <button key={key} onClick={() => toggleFilter(key)} className="hover:underline">
               <i className={filters[key] ? ICONS[key].filled : ICONS[key].outline}></i>
