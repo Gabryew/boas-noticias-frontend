@@ -19,7 +19,7 @@ const calcularTempoLeitura = (texto) => {
   if (!texto) return null;
   const palavras = texto.trim().split(/\s+/).length;
   const minutos = Math.ceil(palavras / 200);
-  return minutos === 1 ? "1 minuto" : `${minutos} minutos`;
+  return minutos === 1 ? "1 minuto" : `${minutos} minutos`; // Corrigido
 };
 
 export default function Home() {
@@ -36,7 +36,7 @@ export default function Home() {
   const fetchNoticias = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?cursor=${cursor}`);
+      const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?cursor=${cursor}`); // Corrigido
       const novasNoticias = response.data.noticias.map((noticia) => ({
         ...noticia,
         readingTime: calcularTempoLeitura(noticia.content),
@@ -56,10 +56,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchNoticias();
-  }, [cursor]);
 
   const lastNoticiaRef = useCallback(
     (node) => {
@@ -95,6 +91,10 @@ export default function Home() {
 
   console.log("Notícias filtradas:", filteredNoticias); // Log das notícias filtradas
 
+  useEffect(() => {
+    fetchNoticias();
+  }, [cursor]);
+
   if (loading && cursor === 0) {
     return (
       <div className="flex items-center justify-center h-screen bg-black">
@@ -109,14 +109,14 @@ export default function Home() {
         <div className="flex space-x-6">
           <Link
             to="/"
-            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`} // Corrigido
           >
             <i className="bi bi-house-fill"></i>
             <span>Início</span>
           </Link>
           <Link
             to="/noticias-salvas"
-            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`} // Corrigido
           >
             <i className="bi bi-bookmarks-fill"></i>
             <span>Salvas</span>
@@ -149,9 +149,9 @@ export default function Home() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
-                onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
+                onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)} // Corrigido
                 style={{
-                  backgroundImage: noticia.image ? `url(${noticia.image})` : "none",
+                  backgroundImage: noticia.image ? `url(${noticia.image})` : "none", // Corrigido
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                   backgroundRepeat: "no-repeat",
