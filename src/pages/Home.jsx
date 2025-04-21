@@ -225,7 +225,7 @@ export default function Home() {
       </div>
 
       {/* Menu inferior centralizado */}
-      <div className="flex justify-center items-center py-3 bg-black/80 z-50 backdrop-blur">
+      <div className="fixed bottom-0 left-0 right-0 flex justify-center items-center py-3 bg-black/80 z-50 backdrop-blur">
         <div className="flex space-x-8 text-lg text-white">
           <Link
             to="/"
