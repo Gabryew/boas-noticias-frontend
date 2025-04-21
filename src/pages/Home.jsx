@@ -26,7 +26,7 @@ export default function Home() {
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [salvas, setSalvas] = useState(() => JSON.parse(localStorage.getItem("noticiasSalvas")) || []);
-  const [cursor, setCursor] = useState(0); // Use a cursor for infinite scrolling
+  const [cursor, setCursor] = useState(null); // Alterado para "null" inicialmente, ao invés de 0
   const [hasMore, setHasMore] = useState(true);
   const [filters, setFilters] = useState({ boa: true, neutra: false, ruim: false });
   const observer = useRef();
@@ -34,9 +34,11 @@ export default function Home() {
   const location = useLocation();
 
   const fetchNoticias = async () => {
+    if (!hasMore || loading) return; // Previne chamadas excessivas se não houver mais ou já estiver carregando.
+
     setLoading(true);
     try {
-      const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?cursor=${cursor}`); // Corrigido
+      const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?cursor=${cursor || 0}`); // Se o cursor for null, usa 0 como padrão
       const novasNoticias = response.data.noticias.map((noticia) => ({
         ...noticia,
         readingTime: calcularTempoLeitura(noticia.content),
@@ -49,7 +51,7 @@ export default function Home() {
         ...novasNoticias.filter((n) => !prev.map((p) => p.id).includes(n.id)),
       ]);
       setHasMore(novasNoticias.length > 0);
-      setCursor(response.data.nextCursor); // Update cursor for the next batch
+      setCursor(response.data.nextCursor || null); // Atualizando o cursor. Se não houver próximo cursor, define como null
     } catch (error) {
       console.error("Erro ao buscar notícias:", error);
     } finally {
@@ -66,7 +68,7 @@ export default function Home() {
             fetchNoticias();
           }
         },
-        { rootMargin: "200px" } // Adjust to load earlier
+        { rootMargin: "200px" } // Ajuste para carregar antes de chegar no fim
       );
       if (node) observer.current.observe(node);
     },
@@ -82,7 +84,7 @@ export default function Home() {
 
   const toggleFilter = (type) => {
     setFilters((prev) => ({ ...prev, [type]: !prev[type] }));
-    setCursor(0); // Reset cursor to start
+    setCursor(0); // Reset cursor para o início
     setHasMore(true);
     setNoticias([]);
   };
@@ -93,9 +95,9 @@ export default function Home() {
 
   useEffect(() => {
     fetchNoticias();
-  }, [cursor]);
+  }, [cursor]); // Agora depende do cursor
 
-  if (loading && cursor === 0) {
+  if (loading && cursor === null) {
     return (
       <div className="flex items-center justify-center h-screen bg-black">
         <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
