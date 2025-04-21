@@ -33,7 +33,7 @@ registerRoute(
   })
 );
 
-// Cache da página offline
+// Precache da página offline
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open('offline-cache').then((cache) => {
