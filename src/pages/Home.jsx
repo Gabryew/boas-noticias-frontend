@@ -19,14 +19,14 @@ const calcularTempoLeitura = (texto) => {
   if (!texto) return null;
   const palavras = texto.trim().split(/\s+/).length;
   const minutos = Math.ceil(palavras / 200);
-  return minutos === 1 ? "1 minuto" : `${minutos} minutos`; // Corrigido
+  return minutos === 1 ? "1 minuto" : `${minutos} minutos`;
 };
 
 export default function Home() {
   const [noticias, setNoticias] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [salvas, setSalvas] = useState(() => JSON.parse(localStorage.getItem("noticiasSalvas")) || []);
-  const [cursor, setCursor] = useState(null); // Alterado para "null" inicialmente, ao invés de 0
+  const [cursor, setCursor] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [filters, setFilters] = useState({ boa: true, neutra: false, ruim: false });
   const observer = useRef();
@@ -34,24 +34,25 @@ export default function Home() {
   const location = useLocation();
 
   const fetchNoticias = async () => {
-    if (!hasMore || loading) return; // Previne chamadas excessivas se não houver mais ou já estiver carregando.
+    if (!hasMore || loading) return;
 
     setLoading(true);
     try {
-      const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?cursor=${cursor || 0}`); // Se o cursor for null, usa 0 como padrão
+      const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?cursor=${cursor}`);
       const novasNoticias = response.data.noticias.map((noticia) => ({
         ...noticia,
         readingTime: calcularTempoLeitura(noticia.content),
       }));
 
-      console.log("Notícias buscadas:", novasNoticias); // Log das notícias buscadas
+      // Log para verificar o que estamos recebendo
+      console.log("Notícias recebidas:", novasNoticias);
 
       setNoticias((prev) => [
         ...prev,
         ...novasNoticias.filter((n) => !prev.map((p) => p.id).includes(n.id)),
       ]);
       setHasMore(novasNoticias.length > 0);
-      setCursor(response.data.nextCursor || null); // Atualizando o cursor. Se não houver próximo cursor, define como null
+      setCursor(response.data.nextCursor || 0); // Se o próximo cursor for nulo, manter como 0
     } catch (error) {
       console.error("Erro ao buscar notícias:", error);
     } finally {
@@ -68,7 +69,7 @@ export default function Home() {
             fetchNoticias();
           }
         },
-        { rootMargin: "200px" } // Ajuste para carregar antes de chegar no fim
+        { rootMargin: "200px" }
       );
       if (node) observer.current.observe(node);
     },
@@ -91,13 +92,17 @@ export default function Home() {
 
   const filteredNoticias = noticias.filter((n) => filters[n.category.toLowerCase()]);
 
-  console.log("Notícias filtradas:", filteredNoticias); // Log das notícias filtradas
-
   useEffect(() => {
     fetchNoticias();
-  }, [cursor]); // Agora depende do cursor
+  }, [cursor]); // Depende apenas do cursor
 
-  if (loading && cursor === null) {
+  useEffect(() => {
+    if (!hasMore && !loading) {
+      console.log("Não há mais notícias para carregar.");
+    }
+  }, [hasMore, loading]);
+
+  if (loading && cursor === 0) {
     return (
       <div className="flex items-center justify-center h-screen bg-black">
         <div className="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin" />
@@ -111,14 +116,14 @@ export default function Home() {
         <div className="flex space-x-6">
           <Link
             to="/"
-            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`} // Corrigido
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
           >
             <i className="bi bi-house-fill"></i>
             <span>Início</span>
           </Link>
           <Link
             to="/noticias-salvas"
-            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`} // Corrigido
+            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
           >
             <i className="bi bi-bookmarks-fill"></i>
             <span>Salvas</span>
@@ -151,9 +156,9 @@ export default function Home() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
-                onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)} // Corrigido
+                onClick={() => navigate(`/noticia/${encodeURIComponent(noticia.link)}`)}
                 style={{
-                  backgroundImage: noticia.image ? `url(${noticia.image})` : "none", // Corrigido
+                  backgroundImage: noticia.image ? `url(${noticia.image})` : "none",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                   backgroundRepeat: "no-repeat",
