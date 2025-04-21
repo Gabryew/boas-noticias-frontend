@@ -93,6 +93,12 @@ const isLocalhost = Boolean(
   });
   
   self.addEventListener('fetch', (event) => {
+    // Verifica se a requisição é para a API (não cachear)
+    if (event.request.url.includes('/api/')) {
+      return event.respondWith(fetch(event.request)); // Requisição para a API vai direto ao servidor
+    }
+  
+    // Para as outras requisições, tenta retornar do cache primeiro
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         if (cachedResponse) {
@@ -109,17 +115,3 @@ const isLocalhost = Boolean(
       })
     );
   });
-  
-  // Função para desregistrar o service worker
-  export function unregister() {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready
-        .then((registration) => {
-          registration.unregister();
-        })
-        .catch((error) => {
-          console.error(error.message);
-        });
-    }
-  }
-  

@@ -27,6 +27,25 @@ export default defineConfig({
           },
         ],
       },
+      workbox: {
+        // Adicionando cache dinâmico para as requisições da API
+        runtimeCaching: [
+          {
+            urlPattern: /\/api\/boas-noticias/,
+            handler: 'NetworkFirst', // Tenta primeiro a rede, depois o cache
+            options: {
+              cacheName: 'noticias-api-cache',
+              expiration: {
+                maxEntries: 10, // Limita o número de entradas no cache
+                maxAgeSeconds: 60 * 60, // 1 hora
+              },
+            },
+          },
+        ],
+      },
+      // Substitua o arquivo padrão do Vite pelo seu customizado
+      srcDir: 'src', // Onde seu arquivo service-worker.js está localizado
+      filename: 'service-worker.js', // Nome do arquivo customizado
     }),
   ],
   build: {
