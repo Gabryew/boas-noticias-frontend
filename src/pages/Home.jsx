@@ -26,17 +26,15 @@ export default function Home() {
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(false);
   const [salvas, setSalvas] = useState(() => JSON.parse(localStorage.getItem("noticiasSalvas")) || []);
-  const [cursor, setCursor] = useState(null); // Inicializando o cursor como null
-  const [hasMore, setHasMore] = useState(true); // Controlando a lógica de mais notícias
+  const [cursor, setCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
   const [filters, setFilters] = useState({ boa: true, neutra: false, ruim: false });
   const observer = useRef();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Função para carregar as notícias com base no cursor
   const fetchNoticias = async (cursorValue) => {
-    if (loading || !hasMore || cursorValue === undefined) return; // Impede múltiplas requisições enquanto está carregando
-
+    if (loading || !hasMore || cursorValue === undefined) return;
     setLoading(true);
     try {
       const response = await axios.get(`https://boas-noticias-frontend.vercel.app/api/boas-noticias?cursor=${cursorValue}`);
@@ -49,31 +47,14 @@ export default function Home() {
         ...prev,
         ...novasNoticias.filter((n) => !prev.map((p) => p.id).includes(n.id)),
       ]);
-      setHasMore(novasNoticias.length > 0); // Se a resposta não trouxer mais notícias, desativa o scroll infinito
-      setCursor(response.data.nextCursor || null); // Se o próximo cursor for nulo, não atualiza
+      setHasMore(novasNoticias.length > 0);
+      setCursor(response.data.nextCursor || null);
     } catch (error) {
       console.error("Erro ao buscar notícias:", error);
     } finally {
       setLoading(false);
     }
   };
-
-  // Função para observar o final da lista de notícias e carregar mais quando necessário
-  const lastNoticiaRef = useCallback(
-    (node) => {
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting && hasMore) {
-            fetchNoticias(cursor); // Carregar mais notícias quando o final da página for alcançado
-          }
-        },
-        { rootMargin: "100px" } // Começa a carregar 100px antes de chegar no final da página
-      );
-      if (node) observer.current.observe(node);
-    },
-    [hasMore, cursor] // O observer só é ativado se houver mais notícias para carregar e cursor não for null
-  );
 
   const toggleSalvarNoticia = (noticia) => {
     const jaSalva = salvas.find((n) => n.id === noticia.id);
@@ -84,7 +65,7 @@ export default function Home() {
 
   const toggleFilter = (type) => {
     setFilters((prev) => ({ ...prev, [type]: !prev[type] }));
-    setCursor(null); // Reset cursor para o início quando alterar o filtro
+    setCursor(null);
     setHasMore(true);
     setNoticias([]);
   };
@@ -95,7 +76,7 @@ export default function Home() {
     if (cursor === null) {
       fetchNoticias(''); // Passa uma string vazia ao invés de null
     }
-  }, [cursor]); // A primeira chamada de fetchNoticias só ocorre se o cursor não for nulo
+  }, [cursor]);
 
   useEffect(() => {
     if (!hasMore && !loading) {
@@ -111,21 +92,25 @@ export default function Home() {
     );
   }
 
+  const handleScroll = (event) => {
+    const direction = event.deltaY;
+    if (direction > 0) {
+      const lastNoticia = document.querySelector(".noticia:last-child");
+      if (lastNoticia) {
+        lastNoticia.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
       <div className="flex justify-between items-center px-4 py-3 bg-black/80 sticky top-0 z-50 backdrop-blur" style={{ height: '60px' }}>
         <div className="flex space-x-6">
-          <Link
-            to="/"
-            className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}
-          >
+          <Link to="/" className={`flex items-center gap-2 hover:underline ${location.pathname === "/" ? "text-white" : "text-gray-400"}`}>
             <i className="bi bi-house-fill"></i>
             <span>Início</span>
           </Link>
-          <Link
-            to="/noticias-salvas"
-            className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}
-          >
+          <Link to="/noticias-salvas" className={`flex items-center gap-2 hover:underline ${location.pathname === "/noticias-salvas" ? "text-white" : "text-gray-400"}`}>
             <i className="bi bi-bookmarks-fill"></i>
             <span>Salvas</span>
           </Link>
@@ -139,21 +124,23 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto" style={{ height: 'calc(100vh - 60px)' }}>
+      <div
+        className="flex-1 overflow-y-auto snap-y snap-mandatory"
+        style={{ height: 'calc(100vh - 60px)' }}
+        onWheel={handleScroll}
+      >
         {filteredNoticias.length === 0 ? (
           <div className="flex items-center justify-center h-full text-white">
             {loading ? "Carregando..." : "Nenhuma notícia encontrada."}
           </div>
         ) : (
           filteredNoticias.map((noticia, index) => {
-            const isLast = index === filteredNoticias.length - 1;
             const salva = salvas.find((n) => n.id === noticia.id);
 
             return (
               <motion.div
                 key={noticia.id}
-                ref={isLast ? lastNoticiaRef : null}
-                className="w-full h-screen snap-start relative cursor-pointer flex flex-col justify-end"
+                className="noticia w-full h-screen snap-start relative cursor-pointer flex flex-col justify-end"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
